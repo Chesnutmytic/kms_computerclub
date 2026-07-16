@@ -1,10 +1,116 @@
 <?php
-session_start(); require_once '../config/koneksi.php';
-if (!isset($_SESSION['role']) || !in_array($_SESSION['role'],['Super Admin','Admin'],true)) { header('Location: ../login.html'); exit; }
-$pageTitle='Kelola Materi'; $flash=$_SESSION['flash']??null; unset($_SESSION['flash']);
-$materi=$conn->query("SELECT am.*,p.nama_lengkap pengunggah FROM ARSIP_MATERI am JOIN PENGGUNA p ON p.id_user=am.id_user ORDER BY am.status='Pending' DESC,am.id_arsip DESC")->fetchAll();
-include '../includes/header.php'; include '../includes/sidebar.php'; ?>
-<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4"><div><h1 class="h3 mb-1">Kelola Arsip Materi</h1><p class="text-muted mb-0">Super Admin dan Admin dapat mengunggah materi.</p></div><div><span class="badge text-bg-warning me-2">Pending ditampilkan lebih dahulu</span><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tambahMateri"><i class="bi bi-upload me-1"></i>Tambah Materi</button></div></div>
-<div class="card border-0 shadow-sm"><div class="table-responsive"><table class="table table-hover align-middle mb-0"><thead class="table-light"><tr><th class="ps-4">No</th><th>Judul</th><th>Pengunggah</th><th>Kategori</th><th>Status</th><th>Tanggal</th><th class="text-center pe-4">Aksi</th></tr></thead><tbody><?php foreach($materi as $i=>$m): ?><tr><td class="ps-4"><?= $i+1 ?></td><td><?= htmlspecialchars($m['judul_dokumen']) ?></td><td><?= htmlspecialchars($m['pengunggah']) ?></td><td><?= htmlspecialchars($m['kategori']) ?></td><td><span class="badge text-bg-<?= $m['status']==='Published'?'success':($m['status']==='Pending'?'warning':'danger') ?>"><?= htmlspecialchars($m['status']) ?></span></td><td><?= htmlspecialchars($m['tgl_unggah']) ?></td><td class="text-center pe-4"><?php if($m['status']==='Pending' && $_SESSION['role']==='Super Admin'): ?><a class="btn btn-sm btn-outline-success" onclick="return confirm('Approve materi ini?')" href="proses_materi.php?action=approve&id=<?= $m['id_arsip'] ?>">Approve</a><a class="btn btn-sm btn-outline-danger" onclick="return confirm('Reject materi ini?')" href="proses_materi.php?action=reject&id=<?= $m['id_arsip'] ?>">Reject</a><?php elseif($m['status']==='Pending'): ?><span class="text-muted small">Menunggu Super Admin</span><?php else: ?><button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#edit<?= $m['id_arsip'] ?>">Edit</button><a class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus materi ini?')" href="proses_materi.php?action=delete&id=<?= $m['id_arsip'] ?>">Hapus</a><?php endif; ?></td></tr><div class="modal fade" id="edit<?= $m['id_arsip'] ?>"><div class="modal-dialog"><form class="modal-content" method="post" action="proses_materi.php?action=edit"><div class="modal-header"><h5 class="modal-title">Edit Materi</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" name="id_arsip" value="<?= $m['id_arsip'] ?>"><input class="form-control mb-3" name="judul_dokumen" value="<?= htmlspecialchars($m['judul_dokumen']) ?>" required><input class="form-control mb-3" name="kategori" value="<?= htmlspecialchars($m['kategori']) ?>"><textarea class="form-control mb-3" name="deskripsi" rows="3"><?= htmlspecialchars($m['deskripsi']) ?></textarea><?php if($_SESSION['role']==='Super Admin'): ?><select class="form-select" name="status"><option value="Published" <?= $m['status']==='Published'?'selected':'' ?>>Published</option><option value="Rejected" <?= $m['status']==='Rejected'?'selected':'' ?>>Rejected</option></select><?php endif; ?></div><div class="modal-footer"><button class="btn btn-primary">Simpan</button></div></form></div></div><?php endforeach; if(!$materi): ?><tr><td colspan="7" class="text-center text-muted py-5">Belum ada arsip materi.</td></tr><?php endif; ?></tbody></table></div></div>
-<div class="modal fade" id="tambahMateri" tabindex="-1"><div class="modal-dialog"><form class="modal-content" method="post" action="proses_materi.php?action=create" enctype="multipart/form-data"><div class="modal-header"><h5 class="modal-title">Upload Materi</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><label class="form-label">Judul dokumen</label><input class="form-control" name="judul_dokumen" required></div><div class="mb-3"><label class="form-label">Kategori</label><input class="form-control" name="kategori"></div><div class="mb-3"><label class="form-label">Deskripsi</label><textarea class="form-control" name="deskripsi" rows="3"></textarea></div><div><label class="form-label">File PDF (opsional, maks. 10 MB)</label><input class="form-control" name="dokumen" type="file" accept="application/pdf"></div></div><div class="modal-footer"><button class="btn btn-primary">Upload</button></div></form></div></div>
+session_start();
+require_once '../config/koneksi.php';
+
+if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['Super Admin', 'Admin'], true)) {
+    header('Location: ../login.html');
+    exit;
+}
+
+$pageTitle = 'Kelola Materi';
+$flash = $_SESSION['flash'] ?? null;
+unset($_SESSION['flash']);
+
+$materi = $conn->query(
+    "SELECT am.*, p.nama_lengkap pengunggah 
+     FROM ARSIP_MATERI am 
+     JOIN PENGGUNA p ON p.id_user = am.id_user 
+     ORDER BY am.status = 'Pending' DESC, am.id_arsip DESC"
+)->fetchAll();
+
+include '../includes/header.php';
+include '../includes/sidebar.php';
+?>
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <div>
+        <h1 class="h3 mb-1">Kelola Arsip Materi</h1>
+        <p class="text-muted mb-0">Super Admin dan Admin dapat mengunggah materi.</p>
+    </div>
+    <div>
+        <span class="badge text-bg-warning me-2">Pending ditampilkan lebih dahulu</span>
+        <a class="btn btn-primary" href="tambah_materi.php">
+            <i class="bi bi-upload me-1"></i>Tambah Materi
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-4">No</th>
+                    <th>Judul</th>
+                    <th>Pengunggah</th>
+                    <th>Kategori</th>
+                    <th>Status</th>
+                    <th>Tanggal</th>
+                    <th class="text-center pe-4">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($materi as $i => $m): ?>
+                    <tr>
+                        <td class="ps-4"><?= $i + 1 ?></td>
+                        <td><?= htmlspecialchars($m['judul_dokumen']) ?></td>
+                        <td><?= htmlspecialchars($m['pengunggah']) ?></td>
+                        <td><?= htmlspecialchars($m['kategori']) ?></td>
+                        <td>
+                            <span class="badge text-bg-<?= $m['status'] === 'Published' ? 'success' : ($m['status'] === 'Pending' ? 'warning' : 'danger') ?>">
+                                <?= htmlspecialchars($m['status']) ?>
+                            </span>
+                        </td>
+                        <td><?= htmlspecialchars($m['tgl_unggah']) ?></td>
+                        <td class="text-center pe-4">
+                            <?php if ($m['status'] === 'Pending' && $_SESSION['role'] === 'Super Admin'): ?>
+                                <a class="btn btn-sm btn-outline-success" onclick="return confirm('Approve materi ini?')" href="proses_materi.php?action=approve&id=<?= $m['id_arsip'] ?>">Approve</a>
+                                <a class="btn btn-sm btn-outline-danger" onclick="return confirm('Reject materi ini?')" href="proses_materi.php?action=reject&id=<?= $m['id_arsip'] ?>">Reject</a>
+                            <?php elseif ($m['status'] === 'Pending'): ?>
+                                <span class="text-muted small">Menunggu Super Admin</span>
+                            <?php else: ?>
+                                <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#edit<?= $m['id_arsip'] ?>">Edit</button>
+                                <a class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus materi ini?')" href="proses_materi.php?action=delete&id=<?= $m['id_arsip'] ?>">Hapus</a>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+
+                    <!-- Modal Edit -->
+                    <div class="modal fade" id="edit<?= $m['id_arsip'] ?>">
+                        <div class="modal-dialog">
+                            <form class="modal-content" method="post" action="proses_materi.php?action=edit">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Edit Materi</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <input type="hidden" name="id_arsip" value="<?= $m['id_arsip'] ?>">
+                                    <input class="form-control mb-3" name="judul_dokumen" value="<?= htmlspecialchars($m['judul_dokumen']) ?>" required>
+                                    <input class="form-control mb-3" name="kategori" value="<?= htmlspecialchars($m['kategori']) ?>">
+                                    <textarea class="form-control mb-3" name="deskripsi" rows="3"><?= htmlspecialchars($m['deskripsi']) ?></textarea>
+                                    <?php if ($_SESSION['role'] === 'Super Admin'): ?>
+                                        <select class="form-select" name="status">
+                                            <option value="Published" <?= $m['status'] === 'Published' ? 'selected' : '' ?>>Published</option>
+                                            <option value="Rejected" <?= $m['status'] === 'Rejected' ? 'selected' : '' ?>>Rejected</option>
+                                        </select>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn btn-primary">Simpan</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+
+                <?php if (!$materi): ?>
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-5">Belum ada arsip materi.</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+
 <?php include '../includes/footer.php'; ?>
