@@ -1,8 +1,8 @@
 <?php
 $host     = 'localhost';
 $dbname   = 'km_computerclub';
-$username = 'root';   // default XAMPP
-$password = '';        // default XAMPP (kosong)
+$username = 'root';   
+$password = '';        
 
 try {
     $conn = new PDO(
