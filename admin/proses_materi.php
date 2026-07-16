@@ -1,85 +1,17 @@
 <?php
-/**
- * admin/proses_materi.php
- * -----------------------------------------------------------
- * Menangani aksi: approve, reject, edit, delete untuk ARSIP_MATERI.
- * Diakses via ?action=approve|reject|edit|delete
- */
 session_start();
 require_once '../config/koneksi.php';
-
-if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['Super Admin', 'Admin'])) {
-    header('Location: ../portal/index.html');
-    exit;
-}
-
-$action = $_GET['action'] ?? $_POST['action'] ?? '';
-
-function setFlash($type, $msg) {
-    $_SESSION['flash'] = ['type' => $type, 'msg' => $msg];
-}
-
+if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['Super Admin', 'Admin'], true)) { header('Location: ../login.html'); exit; }
+function materiBack(string $type, string $message): void { $_SESSION['flash'] = ['type'=>$type, 'msg'=>$message]; header('Location: kelola_materi.php'); exit; }
+$action = $_GET['action'] ?? ''; $id = (int)($_GET['id'] ?? $_POST['id_arsip'] ?? 0);
 try {
-    if ($action === 'approve') {
-
-        $id = (int)($_GET['id'] ?? 0);
-        $stmt = $conn->prepare("UPDATE ARSIP_MATERI SET status = 'Published', id_approver = :approver WHERE id_arsip = :id");
-        $stmt->execute([':approver' => $_SESSION['id_user'], ':id' => $id]);
-
-        setFlash('success', 'Materi berhasil di-approve dan dipublish.');
-
-    } elseif ($action === 'reject') {
-
-        $id = (int)($_GET['id'] ?? 0);
-        $stmt = $conn->prepare("UPDATE ARSIP_MATERI SET status = 'Rejected', id_approver = :approver WHERE id_arsip = :id");
-        $stmt->execute([':approver' => $_SESSION['id_user'], ':id' => $id]);
-
-        // Catatan: alasan reject untuk saat ini hanya disimpan sebagai flash message,
-        // belum ada kolom khusus alasan_reject di skema database.
-        setFlash('warning', 'Materi telah direject.');
-
-    } elseif ($action === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-
-        $id             = (int)($_POST['id_arsip'] ?? 0);
-        $judul_dokumen  = trim($_POST['judul_dokumen'] ?? '');
-        $kategori       = trim($_POST['kategori'] ?? '');
-        $deskripsi      = trim($_POST['deskripsi'] ?? '');
-        $status         = trim($_POST['status'] ?? 'Published');
-
-        if ($id <= 0 || $judul_dokumen === '') {
-            setFlash('warning', 'Data tidak lengkap.');
-            header('Location: kelola_materi.php');
-            exit;
-        }
-
-        $stmt = $conn->prepare("UPDATE ARSIP_MATERI 
-                                 SET judul_dokumen = :judul, kategori = :kategori, deskripsi = :deskripsi, status = :status 
-                                 WHERE id_arsip = :id");
-        $stmt->execute([
-            ':judul'     => $judul_dokumen,
-            ':kategori'  => $kategori,
-            ':deskripsi' => $deskripsi,
-            ':status'    => $status,
-            ':id'        => $id,
-        ]);
-
-        setFlash('success', 'Materi berhasil diperbarui.');
-
-    } elseif ($action === 'delete') {
-
-        $id = (int)($_GET['id'] ?? 0);
-        $stmt = $conn->prepare("DELETE FROM ARSIP_MATERI WHERE id_arsip = :id");
-        $stmt->execute([':id' => $id]);
-
-        setFlash('success', 'Materi berhasil dihapus.');
-
-    } else {
-        setFlash('warning', 'Aksi tidak dikenali.');
-    }
-
-} catch (PDOException $e) {
-    setFlash('danger', 'Terjadi kesalahan: ' . $e->getMessage());
-}
-
-header('Location: kelola_materi.php');
-exit;
+ if ($action === 'create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+  $judul=trim($_POST['judul_dokumen']??''); if($judul==='') throw new RuntimeException('Judul materi wajib diisi.'); $filePath=null;
+  if (!empty($_FILES['dokumen']['name'])) { if($_FILES['dokumen']['error']!==UPLOAD_ERR_OK) throw new RuntimeException('File materi gagal diunggah.'); if($_FILES['dokumen']['size']>10*1024*1024) throw new RuntimeException('Ukuran file maksimal 10 MB.'); if(strtolower(pathinfo($_FILES['dokumen']['name'],PATHINFO_EXTENSION))!=='pdf') throw new RuntimeException('File materi harus berformat PDF.'); $dir='../assets/uploads'; if(!is_dir($dir)&&!mkdir($dir,0775,true)) throw new RuntimeException('Folder upload tidak dapat dibuat.'); $name=uniqid('materi_',true).'.pdf'; if(!move_uploaded_file($_FILES['dokumen']['tmp_name'],$dir.'/'.$name)) throw new RuntimeException('File materi tidak dapat disimpan.'); $filePath='assets/uploads/'.$name; }
+  $conn->prepare("INSERT INTO ARSIP_MATERI (id_user,judul_dokumen,deskripsi,kategori,file_path,status,tgl_unggah) VALUES (:user,:judul,:deskripsi,:kategori,:file,'Pending',CURDATE())")->execute([':user'=>$_SESSION['id_user'],':judul'=>$judul,':deskripsi'=>trim($_POST['deskripsi']??''),':kategori'=>trim($_POST['kategori']??''),':file'=>$filePath]); materiBack('success','Materi berhasil diunggah dan menunggu approval Super Admin.');
+ }
+ if (in_array($action,['approve','reject'],true)) { if($_SESSION['role']!=='Super Admin') throw new RuntimeException('Hanya Super Admin yang dapat mengubah status materi.'); if($id<=0) throw new RuntimeException('ID materi tidak valid.'); $status=$action==='approve'?'Published':'Rejected'; $conn->prepare("UPDATE ARSIP_MATERI SET status=:status,id_approver=:approver WHERE id_arsip=:id AND status='Pending'")->execute([':status'=>$status,':approver'=>$_SESSION['id_user'],':id'=>$id]); materiBack($action==='approve'?'success':'warning',$action==='approve'?'Materi berhasil dipublish.':'Materi telah direject.'); }
+ if ($action==='edit' && $_SERVER['REQUEST_METHOD']==='POST' && $id>0) { $judul=trim($_POST['judul_dokumen']??'');if($judul==='')throw new RuntimeException('Judul materi wajib diisi.');$stmt=$conn->prepare('SELECT status FROM ARSIP_MATERI WHERE id_arsip=:id');$stmt->execute([':id'=>$id]);$status=$stmt->fetchColumn();if($status===false)throw new RuntimeException('Materi tidak ditemukan.');if($_SESSION['role']==='Super Admin'&&isset($_POST['status'])&&in_array($_POST['status'],['Published','Rejected'],true))$status=$_POST['status'];$conn->prepare('UPDATE ARSIP_MATERI SET judul_dokumen=:judul,kategori=:kategori,deskripsi=:deskripsi,status=:status WHERE id_arsip=:id')->execute([':judul'=>$judul,':kategori'=>trim($_POST['kategori']??''),':deskripsi'=>trim($_POST['deskripsi']??''),':status'=>$status,':id'=>$id]);materiBack('success','Materi berhasil diperbarui.'); }
+ if ($action==='delete' && $id>0) { $conn->prepare('DELETE FROM ARSIP_MATERI WHERE id_arsip=:id')->execute([':id'=>$id]); materiBack('success','Materi berhasil dihapus.'); }
+ throw new RuntimeException('Aksi materi tidak dikenali.');
+} catch (Throwable $e) { materiBack('danger',$e->getMessage()); }

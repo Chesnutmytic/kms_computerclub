@@ -36,7 +36,7 @@ try {
         if ($user['role'] === 'Super Admin' || $user['role'] === 'Admin') {
             header("Location: admin/dashboard.php");
         } else {
-            header("Location: portal/index.html");
+            header("Location: portal/tambah_catatan.php");
         }
         exit;
 
