@@ -1,7 +1,7 @@
 <?php
 session_start(); require_once '../config/koneksi.php';
 if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['Super Admin', 'Admin'], true)) { header('Location: ../login.html'); exit; }
-function catatanBack(string $type, string $msg): void { $_SESSION['flash'] = ['type' => $type, 'msg' => $msg]; header('Location: kelola_catatan.html'); exit; }
+function catatanBack(string $type, string $msg): void { $_SESSION['flash'] = ['type' => $type, 'msg' => $msg]; header('Location: kelola_catatan.php'); exit; }
 $action = $_GET['action'] ?? ''; $id = (int) ($_GET['id'] ?? $_POST['id_catatan'] ?? 0);
 try {
     if ($id <= 0 && $action !== 'edit') throw new RuntimeException('ID catatan tidak valid.');

@@ -34,7 +34,7 @@ try {
         $_SESSION['role']         = $user['role'];
 
         if ($user['role'] === 'Super Admin' || $user['role'] === 'Admin') {
-            header("Location: admin/dashboard.html");
+            header("Location: admin/dashboard.php");
         } else {
             header("Location: portal/index.html");
         }

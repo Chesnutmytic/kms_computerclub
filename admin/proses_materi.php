@@ -48,7 +48,7 @@ try {
 
         if ($id <= 0 || $judul_dokumen === '') {
             setFlash('warning', 'Data tidak lengkap.');
-            header('Location: kelola_materi.html');
+            header('Location: kelola_materi.php');
             exit;
         }
 
@@ -81,5 +81,5 @@ try {
     setFlash('danger', 'Terjadi kesalahan: ' . $e->getMessage());
 }
 
-header('Location: kelola_materi.html');
+header('Location: kelola_materi.php');
 exit;

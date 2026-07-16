@@ -1,7 +1,7 @@
 <?php
 session_start(); require_once '../config/koneksi.php';
 if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['Super Admin', 'Admin'], true)) { header('Location: ../login.html'); exit; }
-function alurBack(string $type, string $msg): void { $_SESSION['flash']=['type'=>$type,'msg'=>$msg]; header('Location: kelola_alur.html'); exit; }
+function alurBack(string $type, string $msg): void { $_SESSION['flash']=['type'=>$type,'msg'=>$msg]; header('Location: kelola_alur.php'); exit; }
 $action=$_GET['action']??''; $id=(int)($_POST['id_alur']??$_GET['id']??0);
 try {
  if ($action==='create' && $_SERVER['REQUEST_METHOD']==='POST') { $status=$_POST['status']??'Draft'; if(!in_array($status,['Draft','Published'],true)) throw new RuntimeException('Status tidak valid.'); $conn->prepare('INSERT INTO ALUR_PEMBELAJARAN (id_user,nama_alur,tingkat_level,status,tgl_dibuat) VALUES (:user,:nama,:level,:status,CURDATE())')->execute([':user'=>$_SESSION['id_user'],':nama'=>trim($_POST['nama_alur']??''),':level'=>trim($_POST['tingkat_level']??''),':status'=>$status]); alurBack('success','Alur berhasil dibuat.'); }

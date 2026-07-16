@@ -6,7 +6,7 @@ if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['Super Admin', 'A
     header('Location: ../login.html'); exit;
 }
 
-function back(string $message): void { $_SESSION['flash'] = ['type' => 'success', 'msg' => $message]; header('Location: user_management.html'); exit; }
+function back(string $message): void { $_SESSION['flash'] = ['type' => 'success', 'msg' => $message]; header('Location: user_management.php'); exit; }
 function validRole(string $role): bool { return in_array($role, ['Super Admin', 'Admin', 'Anggota'], true); }
 
 $action = $_GET['action'] ?? '';
@@ -40,4 +40,4 @@ try {
         $conn->prepare('DELETE FROM PENGGUNA WHERE id_user=:id')->execute([':id' => $id]); back('Pengguna berhasil dihapus.');
     }
     throw new RuntimeException('Aksi pengguna tidak dikenali.');
-} catch (Throwable $e) { $_SESSION['flash'] = ['type' => 'danger', 'msg' => $e->getMessage()]; header('Location: user_management.html'); exit; }
+} catch (Throwable $e) { $_SESSION['flash'] = ['type' => 'danger', 'msg' => $e->getMessage()]; header('Location: user_management.php'); exit; }
