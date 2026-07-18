@@ -1,10 +1,80 @@
 <?php
-session_start(); require_once '../config/koneksi.php';
-if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['Super Admin','Admin'], true)) { header('Location: ../login.html'); exit; }
-$pageTitle='Kelola Catatan'; $flash=$_SESSION['flash']??null; unset($_SESSION['flash']);
-$data=$conn->query("SELECT cp.*,p.nama_lengkap pengunggah FROM CATATAN_PENGALAMAN cp JOIN PENGGUNA p ON p.id_user=cp.id_user ORDER BY cp.status='Pending' DESC,cp.id_catatan DESC")->fetchAll();
-include '../includes/header.php'; include '../includes/sidebar.php';
+session_start();
+require_once '../config/koneksi.php';
+
+if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['Super Admin', 'Admin'], true)) {
+    header('Location: ../login.html');
+    exit;
+}
+
+$pageTitle = 'Kelola Catatan';
+$flash = $_SESSION['flash'] ?? null;
+unset($_SESSION['flash']);
+
+$data = $conn->query(
+    "SELECT cp.*, p.nama_lengkap pengunggah 
+     FROM CATATAN_PENGALAMAN cp 
+     JOIN PENGGUNA p ON p.id_user = cp.id_user 
+     ORDER BY cp.status = 'Pending' DESC, cp.id_catatan DESC"
+)->fetchAll();
+
+include '../includes/header.php';
+include '../includes/sidebar.php';
 ?>
-<div class="d-flex justify-content-between align-items-center mb-4"><div><h1 class="h3 mb-1">Kelola Catatan Pengalaman</h1><p class="text-muted mb-0">Catatan baru selalu berstatus Pending.</p></div><a class="btn btn-primary" href="tambah_catatan.php">Tambah Catatan</a></div>
-<div class="card border-0 shadow-sm"><div class="table-responsive"><table class="table table-hover align-middle mb-0"><thead class="table-light"><tr><th>No</th><th>Judul Kegiatan</th><th>Jenis</th><th>Pengunggah</th><th>Status</th><th>Tanggal</th><th>Aksi</th></tr></thead><tbody><?php foreach($data as $i=>$c): ?><tr><td><?= $i+1 ?></td><td><?= htmlspecialchars($c['judul_kegiatan']) ?></td><td><?= htmlspecialchars($c['jenis_kegiatan']) ?></td><td><?= htmlspecialchars($c['pengunggah']) ?></td><td><span class="badge text-bg-<?= $c['status']==='Published'?'success':($c['status']==='Pending'?'warning':'danger') ?>"><?= htmlspecialchars($c['status']) ?></span></td><td><?= htmlspecialchars($c['tgl_unggah']) ?></td><td><?php if($c['status']==='Pending'): ?><a class="btn btn-sm btn-outline-success" href="proses_catatan.php?action=approve&id=<?= $c['id_catatan'] ?>">Approve</a><a class="btn btn-sm btn-outline-danger" href="proses_catatan.php?action=reject&id=<?= $c['id_catatan'] ?>">Reject</a><?php else: ?><a class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus catatan ini?')" href="proses_catatan.php?action=delete&id=<?= $c['id_catatan'] ?>">Hapus</a><?php endif; ?></td></tr><?php endforeach; if(!$data): ?><tr><td colspan="7" class="text-center text-muted py-5">Belum ada catatan.</td></tr><?php endif; ?></tbody></table></div></div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">Kelola Catatan Pengalaman</h1>
+        <p class="text-muted mb-0">Catatan baru selalu berstatus Pending.</p>
+    </div>
+    <a class="btn btn-primary" href="tambah_catatan.php">Tambah Catatan</a>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>No</th>
+                    <th>Judul Kegiatan</th>
+                    <th>Jenis</th>
+                    <th>Pengunggah</th>
+                    <th>Status</th>
+                    <th>Tanggal</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($data as $i => $c): ?>
+                    <tr>
+                        <td><?= $i + 1 ?></td>
+                        <td><?= htmlspecialchars($c['judul_kegiatan']) ?></td>
+                        <td><?= htmlspecialchars($c['jenis_kegiatan']) ?></td>
+                        <td><?= htmlspecialchars($c['pengunggah']) ?></td>
+                        <td>
+                            <span class="badge text-bg-<?= $c['status'] === 'Published' ? 'success' : ($c['status'] === 'Pending' ? 'warning' : 'danger') ?>">
+                                <?= htmlspecialchars($c['status']) ?>
+                            </span>
+                        </td>
+                        <td><?= htmlspecialchars($c['tgl_unggah']) ?></td>
+                        <td>
+                            <?php if ($c['status'] === 'Pending'): ?>
+                                <a class="btn btn-sm btn-outline-success" href="proses_catatan.php?action=approve&id=<?= $c['id_catatan'] ?>">Approve</a>
+                                <a class="btn btn-sm btn-outline-danger" href="proses_catatan.php?action=reject&id=<?= $c['id_catatan'] ?>">Reject</a>
+                            <?php else: ?>
+                                <a class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus catatan ini?')" href="proses_catatan.php?action=delete&id=<?= $c['id_catatan'] ?>">Hapus</a>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                <?php if (!$data): ?>
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-5">Belum ada catatan.</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+
 <?php include '../includes/footer.php'; ?>

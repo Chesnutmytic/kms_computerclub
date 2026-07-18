@@ -1,10 +1,74 @@
 <?php
-session_start(); require_once '../config/koneksi.php';
-if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['Super Admin','Admin'], true)) { header('Location: ../login.html'); exit; }
-$pageTitle='Upload Materi'; $flash=$_SESSION['flash']??null; unset($_SESSION['flash']); include '../includes/header.php'; include '../includes/sidebar.php';
+session_start();
+require_once '../config/koneksi.php';
+
+if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['Super Admin', 'Admin'], true)) {
+    header('Location: ../login.html');
+    exit;
+}
+
+$pageTitle = 'Upload Materi';
+$flash = $_SESSION['flash'] ?? null;
+unset($_SESSION['flash']);
+
+include '../includes/header.php';
+include '../includes/sidebar.php';
 ?>
+
 <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
-<div class="d-flex justify-content-between align-items-center mb-4"><div><h1 class="h3 mb-1">Upload Materi</h1><p class="text-muted mb-0">Materi baru akan menunggu approval Super Admin.</p></div><a class="btn btn-outline-secondary" href="kelola_materi.php">Kembali</a></div>
-<div class="card border-0 shadow-sm"><form class="card-body p-4" method="post" action="proses_materi.php?action=create" enctype="multipart/form-data"><div class="mb-3"><label class="form-label">Judul dokumen</label><input class="form-control" name="judul_dokumen" required></div><div class="mb-3"><label class="form-label">Kategori</label><input class="form-control" name="kategori"></div><div class="mb-3"><label class="form-label">Deskripsi</label><div id="editor-deskripsi" style="height:180px"></div><input type="hidden" name="deskripsi" id="deskripsi"></div><div class="mb-4"><label class="form-label">File PDF, PPT, atau PPTX (opsional, maks. 10 MB)</label><input class="form-control" name="dokumen" type="file" accept="application/pdf,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,.ppt,.pptx"></div><button class="btn btn-primary">Upload Materi</button></form></div>
-<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script><script>const editor=new Quill('#editor-deskripsi',{theme:'snow',modules:{toolbar:[['bold','italic','underline'],[{list:'ordered'},{list:'bullet'}],['link'],['clean']]}});document.querySelector('form').addEventListener('submit',()=>document.getElementById('deskripsi').value=editor.root.innerHTML);</script>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">Upload Materi</h1>
+        <p class="text-muted mb-0">Materi baru akan menunggu approval Super Admin.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="kelola_materi.php">Kembali</a>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <form class="card-body p-4" method="post" action="proses_materi.php?action=create" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label class="form-label">Judul dokumen</label>
+            <input class="form-control" name="judul_dokumen" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Kategori</label>
+            <input class="form-control" name="kategori">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Deskripsi</label>
+            <div id="editor-deskripsi" style="height:180px"></div>
+            <input type="hidden" name="deskripsi" id="deskripsi">
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label">File PDF, PPT, atau PPTX (opsional, maks. 10 MB)</label>
+            <input class="form-control" name="dokumen" type="file" accept="application/pdf,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,.ppt,.pptx">
+        </div>
+
+        <button class="btn btn-primary">Upload Materi</button>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+<script>
+    const editor = new Quill('#editor-deskripsi', {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                ['bold', 'italic', 'underline'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                ['link'],
+                ['clean']
+            ]
+        }
+    });
+
+    document.querySelector('form').addEventListener('submit', function() {
+        document.getElementById('deskripsi').value = editor.root.innerHTML;
+    });
+</script>
+
 <?php include '../includes/footer.php'; ?>
