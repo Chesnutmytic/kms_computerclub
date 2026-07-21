@@ -82,6 +82,11 @@ try {
             ':id' => $id
         ]);
         
+        if ($action === 'approve') {
+            require_once '../rag/auto_embed.php';
+            triggerEmbedMateri($conn, $id); 
+        }
+
         materiBack(
             $action === 'approve' ? 'success' : 'warning',
             $action === 'approve' ? 'Materi berhasil dipublish.' : 'Materi telah direject.'
@@ -93,31 +98,69 @@ try {
         if ($judul === '') {
             throw new RuntimeException('Judul materi wajib diisi.');
         }
-        
-        $stmt = $conn->prepare('SELECT status FROM ARSIP_MATERI WHERE id_arsip = :id');
+
+        $stmt = $conn->prepare('SELECT status, file_path FROM ARSIP_MATERI WHERE id_arsip = :id');
         $stmt->execute([':id' => $id]);
-        $status = $stmt->fetchColumn();
-        
-        if ($status === false) {
+        $existing = $stmt->fetch();
+
+        if (!$existing) {
             throw new RuntimeException('Materi tidak ditemukan.');
         }
-        
-        if ($_SESSION['role'] === 'Super Admin' && isset($_POST['status']) && in_array($_POST['status'], ['Published', 'Rejected'], true)) {
+
+        $status   = $existing['status'];
+        $filePath = $existing['file_path'];
+
+        // Izin ubah status untuk Super Admin
+        if ($_SESSION['role'] === 'Super Admin'
+            && isset($_POST['status'])
+            && in_array($_POST['status'], ['Published', 'Rejected', 'Pending'], true)) {
             $status = $_POST['status'];
         }
-        
+
+        // Proses upload file baru (opsional — jika dikirim)
+        if (!empty($_FILES['dokumen']['name'])) {
+            if ($_FILES['dokumen']['error'] !== UPLOAD_ERR_OK) {
+                throw new RuntimeException('File gagal diunggah.');
+            }
+            if ($_FILES['dokumen']['size'] > 10 * 1024 * 1024) {
+                throw new RuntimeException('Ukuran file maksimal 10 MB.');
+            }
+            $ext = strtolower(pathinfo($_FILES['dokumen']['name'], PATHINFO_EXTENSION));
+            if (!in_array($ext, ['pdf', 'ppt', 'pptx'], true)) {
+                throw new RuntimeException('File harus berformat PDF, PPT, atau PPTX.');
+            }
+
+            $dir = '../assets/uploads';
+            if (!is_dir($dir) && !mkdir($dir, 0775, true)) {
+                throw new RuntimeException('Folder upload tidak dapat dibuat.');
+            }
+
+            // Hapus file lama jika ada
+            if (!empty($filePath) && file_exists('../' . $filePath)) {
+                @unlink('../' . $filePath);
+            }
+
+            $name     = uniqid('materi_', true) . '.' . $ext;
+            if (!move_uploaded_file($_FILES['dokumen']['tmp_name'], $dir . '/' . $name)) {
+                throw new RuntimeException('File tidak dapat disimpan.');
+            }
+            $filePath = 'assets/uploads/' . $name;
+        }
+
         $conn->prepare(
-            'UPDATE ARSIP_MATERI 
-             SET judul_dokumen = :judul, kategori = :kategori, deskripsi = :deskripsi, status = :status 
+            'UPDATE ARSIP_MATERI
+             SET judul_dokumen = :judul, kategori = :kategori, deskripsi = :deskripsi,
+                 status = :status, file_path = :file
              WHERE id_arsip = :id'
         )->execute([
-            ':judul' => $judul,
-            ':kategori' => trim($_POST['kategori'] ?? ''),
+            ':judul'     => $judul,
+            ':kategori'  => trim($_POST['kategori'] ?? ''),
             ':deskripsi' => trim($_POST['deskripsi'] ?? ''),
-            ':status' => $status,
-            ':id' => $id
+            ':status'    => $status,
+            ':file'      => $filePath,
+            ':id'        => $id,
         ]);
-        
+
         materiBack('success', 'Materi berhasil diperbarui.');
     }
 

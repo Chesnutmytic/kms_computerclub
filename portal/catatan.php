@@ -1,4 +1,100 @@
 <?php
-session_start();require_once '../config/koneksi.php';if(!isset($_SESSION['id_user'])){header('Location: ../login.html');exit;}$q=trim($_GET['q']??'');$sql="SELECT cp.*,p.nama_lengkap FROM CATATAN_PENGALAMAN cp JOIN PENGGUNA p ON p.id_user=cp.id_user WHERE cp.status='Published'";$params=[];if($q!==''){$sql.=" AND (cp.judul_kegiatan LIKE :q OR cp.kategori LIKE :q)";$params[':q']='%'.$q.'%';}$sql.=' ORDER BY cp.tgl_unggah DESC,cp.id_catatan DESC';$stmt=$conn->prepare($sql);$stmt->execute($params);$items=$stmt->fetchAll();include '../includes/header_portal.html'; ?>
-<main class="container py-5"><div class="d-flex justify-content-between align-items-center mb-4"><div><h1 class="h3 mb-1">Catatan Pengalaman</h1><p class="text-muted mb-0">Pengalaman dan pembelajaran dari anggota.</p></div><a class="btn btn-outline-primary" href="tambah_catatan.php">Tambah Catatan</a></div><form class="row g-2 mb-4" method="get"><div class="col-md-8"><input class="form-control" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="Cari judul atau kategori"></div><div class="col-md-2"><button class="btn btn-primary w-100">Cari</button></div><div class="col-md-2"><a class="btn btn-outline-secondary w-100" href="catatan.php">Reset</a></div></form><div class="list-group shadow-sm"><?php foreach($items as $c): ?><article class="list-group-item py-3"><div class="d-flex justify-content-between gap-3"><div><h2 class="h6 mb-1"><?= htmlspecialchars($c['judul_kegiatan']) ?></h2><div class="small text-muted mb-2"><?= htmlspecialchars($c['jenis_kegiatan']) ?> · <?= htmlspecialchars($c['kategori']?:'Umum') ?> · <?= htmlspecialchars($c['nama_lengkap']) ?></div><p class="mb-2 small"><?= htmlspecialchars(mb_strimwidth(strip_tags($c['pengalaman']??''),0,100,'…')) ?></p><button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#catatan<?= $c['id_catatan'] ?>">Baca Selengkapnya</button></div><small class="text-nowrap"><?= htmlspecialchars($c['tgl_unggah']) ?></small></div></article><div class="modal fade" id="catatan<?= $c['id_catatan'] ?>" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h3 class="modal-title h5"><?= htmlspecialchars($c['judul_kegiatan']) ?></h3><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h4 class="h6">Pengalaman</h4><p><?= nl2br(htmlspecialchars(strip_tags($c['pengalaman']??''))) ?></p><h4 class="h6">Kendala</h4><p><?= nl2br(htmlspecialchars($c['kendala']??'')) ?></p><h4 class="h6">Solusi</h4><p class="mb-0"><?= nl2br(htmlspecialchars($c['solusi']??'')) ?></p></div></div></div></div><?php endforeach;if(!$items): ?><div class="list-group-item text-muted py-4">Catatan tidak ditemukan.</div><?php endif; ?></div></main>
+session_start();
+require_once '../config/koneksi.php';
+
+if (!isset($_SESSION['id_user'])) {
+    header('Location: ../login.html');
+    exit;
+}
+
+$q = trim($_GET['q'] ?? '');
+$sql = "SELECT cp.*, p.nama_lengkap 
+        FROM CATATAN_PENGALAMAN cp 
+        JOIN PENGGUNA p ON p.id_user = cp.id_user 
+        WHERE cp.status = 'Published'";
+$params = [];
+
+if ($q !== '') {
+    $sql .= " AND (cp.judul_kegiatan LIKE :q OR cp.kategori LIKE :q)";
+    $params[':q'] = '%' . $q . '%';
+}
+
+$sql .= ' ORDER BY cp.tgl_unggah DESC, cp.id_catatan DESC';
+$stmt = $conn->prepare($sql);
+$stmt->execute($params);
+$items = $stmt->fetchAll();
+
+include '../includes/header_portal.html';
+?>
+
+<main class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Catatan Pengalaman</h1>
+            <p class="text-muted mb-0">Pengalaman dan pembelajaran dari anggota.</p>
+        </div>
+        <a class="btn btn-outline-primary" href="tambah_catatan.php">Tambah Catatan</a>
+    </div>
+
+    <form class="row g-2 mb-4" method="get">
+        <div class="col-md-8">
+            <input class="form-control" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="Cari judul atau kategori">
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-primary w-100">Cari</button>
+        </div>
+        <div class="col-md-2">
+            <a class="btn btn-outline-secondary w-100" href="catatan.php">Reset</a>
+        </div>
+    </form>
+
+    <div class="list-group shadow-sm">
+        <?php foreach ($items as $c): ?>
+            <article class="list-group-item py-3">
+                <div class="d-flex justify-content-between gap-3">
+                    <div>
+                        <h2 class="h6 mb-1"><?= htmlspecialchars($c['judul_kegiatan']) ?></h2>
+                        <div class="small text-muted mb-2">
+                            <?= htmlspecialchars($c['jenis_kegiatan']) ?> · <?= htmlspecialchars($c['kategori'] ?: 'Umum') ?> · <?= htmlspecialchars($c['nama_lengkap']) ?>
+                        </div>
+                        <p class="mb-2 small">
+                            <?= htmlspecialchars(mb_strimwidth(strip_tags($c['pengalaman'] ?? ''), 0, 100, '…')) ?>
+                        </p>
+                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#catatan<?= $c['id_catatan'] ?>">
+                            Baca Selengkapnya
+                        </button>
+                    </div>
+                    <small class="text-nowrap"><?= htmlspecialchars($c['tgl_unggah']) ?></small>
+                </div>
+            </article>
+
+            <!-- Modal Detail Catatan -->
+            <div class="modal fade" id="catatan<?= $c['id_catatan'] ?>" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 class="modal-title h5"><?= htmlspecialchars($c['judul_kegiatan']) ?></h3>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <h4 class="h6">Pengalaman</h4>
+                            <p><?= nl2br(htmlspecialchars(strip_tags($c['pengalaman'] ?? ''))) ?></p>
+
+                            <h4 class="h6">Kendala</h4>
+                            <p><?= nl2br(htmlspecialchars($c['kendala'] ?? '')) ?></p>
+
+                            <h4 class="h6">Solusi</h4>
+                            <p class="mb-0"><?= nl2br(htmlspecialchars($c['solusi'] ?? '')) ?></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
+
+        <?php if (!$items): ?>
+            <div class="list-group-item text-muted py-4">Catatan tidak ditemukan.</div>
+        <?php endif; ?>
+    </div>
+</main>
+
 <?php include '../includes/footer_portal.html'; ?>

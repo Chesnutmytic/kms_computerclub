@@ -62,7 +62,10 @@ try {
             ':approver' => $_SESSION['id_user'],
             ':id' => $id
         ]);
-        
+        if ($action === 'approve') {
+            require_once '../rag/auto_embed.php';
+            triggerEmbedCatatan($conn, $id); 
+        }
         catatanBack(
             $action === 'approve' ? 'success' : 'warning',
             $action === 'approve' ? 'Catatan berhasil dipublish.' : 'Catatan telah direject.'

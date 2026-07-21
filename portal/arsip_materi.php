@@ -1,9 +1,126 @@
 <?php
-session_start(); require_once '../config/koneksi.php'; if(!isset($_SESSION['id_user'])){header('Location: ../login.html');exit;}
-$q=trim($_GET['q']??'');$kategori=trim($_GET['kategori']??'');$page=max(1,(int)($_GET['page']??1));$perPage=10;$where=" WHERE am.status='Published'";$params=[];
-if($q!==''){$where.=" AND (am.judul_dokumen LIKE :q OR am.kategori LIKE :q)";$params[':q']='%'.$q.'%';}if($kategori!==''){$where.=" AND am.kategori=:kategori";$params[':kategori']=$kategori;}
-$categories=$conn->query("SELECT DISTINCT kategori FROM ARSIP_MATERI WHERE status='Published' AND kategori IS NOT NULL AND kategori<>'' ORDER BY kategori")->fetchAll(PDO::FETCH_COLUMN);
-$counter=$conn->prepare("SELECT COUNT(*) FROM ARSIP_MATERI am $where");$counter->execute($params);$total=(int)$counter->fetchColumn();$pages=max(1,(int)ceil($total/$perPage));$page=min($page,$pages);$stmt=$conn->prepare("SELECT am.*,p.nama_lengkap FROM ARSIP_MATERI am JOIN PENGGUNA p ON p.id_user=am.id_user $where ORDER BY am.tgl_unggah DESC,am.id_arsip DESC LIMIT $perPage OFFSET ".(($page-1)*$perPage));$stmt->execute($params);$items=$stmt->fetchAll();
-include '../includes/header_portal.html'; ?>
-<main class="container py-5"><div class="mb-4"><h1 class="h3 mb-1">Arsip Materi</h1><p class="text-muted mb-0">Materi pembelajaran yang telah dipublikasikan.</p></div><form class="row g-2 mb-4" method="get"><div class="col-md-6"><input class="form-control" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="Cari judul atau kategori"></div><div class="col-md-4"><select class="form-select" name="kategori"><option value="">Semua kategori</option><?php foreach($categories as $item): ?><option value="<?= htmlspecialchars($item) ?>" <?= $kategori===$item?'selected':'' ?>><?= htmlspecialchars($item) ?></option><?php endforeach; ?></select></div><div class="col-md-2"><button class="btn btn-primary w-100">Cari</button></div></form><div class="row g-4"><?php foreach($items as $m): ?><div class="col-md-6 col-lg-4"><article class="card border-0 shadow-sm h-100"><div class="card-body d-flex flex-column"><span class="badge text-bg-primary align-self-start mb-2"><?= htmlspecialchars($m['kategori']?:'Umum') ?></span><h2 class="h5"><?= htmlspecialchars($m['judul_dokumen']) ?></h2><p class="text-muted small mb-2">oleh <?= htmlspecialchars($m['nama_lengkap']) ?> · <?= htmlspecialchars($m['tgl_unggah']) ?></p><p class="small flex-grow-1"><?= htmlspecialchars(mb_strimwidth(strip_tags($m['deskripsi']??''),0,160,'…')) ?></p><?php if(!empty($m['file_path'])): ?><a class="btn btn-outline-primary btn-sm align-self-start" href="../<?= htmlspecialchars(ltrim($m['file_path'],'/')) ?>" target="_blank" rel="noopener">Lihat / Download</a><?php endif; ?></div></article></div><?php endforeach;if(!$items): ?><p class="text-muted">Materi tidak ditemukan.</p><?php endif; ?></div><?php if($pages>1): ?><nav class="mt-5"><ul class="pagination justify-content-center"><?php for($n=1;$n<=$pages;$n++): ?><li class="page-item <?= $n===$page?'active':'' ?>"><a class="page-link" href="?<?= htmlspecialchars(http_build_query(['q'=>$q,'kategori'=>$kategori,'page'=>$n])) ?>"><?= $n ?></a></li><?php endfor; ?></ul></nav><?php endif; ?></main>
+session_start();
+require_once '../config/koneksi.php';
+
+if (!isset($_SESSION['id_user'])) {
+    header('Location: ../login.html');
+    exit;
+}
+
+$q = trim($_GET['q'] ?? '');
+$kategori = trim($_GET['kategori'] ?? '');
+$page = max(1, (int)($_GET['page'] ?? 1));
+$perPage = 10;
+$where = " WHERE am.status = 'Published'";
+$params = [];
+
+if ($q !== '') {
+    $where .= " AND (am.judul_dokumen LIKE :q OR am.kategori LIKE :q)";
+    $params[':q'] = '%' . $q . '%';
+}
+
+if ($kategori !== '') {
+    $where .= " AND am.kategori = :kategori";
+    $params[':kategori'] = $kategori;
+}
+
+$categories = $conn->query(
+    "SELECT DISTINCT kategori 
+     FROM ARSIP_MATERI 
+     WHERE status = 'Published' AND kategori IS NOT NULL AND kategori <> '' 
+     ORDER BY kategori"
+)->fetchAll(PDO::FETCH_COLUMN);
+
+$counter = $conn->prepare("SELECT COUNT(*) FROM ARSIP_MATERI am $where");
+$counter->execute($params);
+$total = (int)$counter->fetchColumn();
+$pages = max(1, (int)ceil($total / $perPage));
+$page = min($page, $pages);
+
+$stmt = $conn->prepare(
+    "SELECT am.*, p.nama_lengkap 
+     FROM ARSIP_MATERI am 
+     JOIN PENGGUNA p ON p.id_user = am.id_user 
+     $where 
+     ORDER BY am.tgl_unggah DESC, am.id_arsip DESC 
+     LIMIT $perPage OFFSET " . (($page - 1) * $perPage)
+);
+$stmt->execute($params);
+$items = $stmt->fetchAll();
+
+include '../includes/header_portal.html';
+?>
+
+<main class="container py-5">
+    <div class="mb-4">
+        <h1 class="h3 mb-1">Arsip Materi</h1>
+        <p class="text-muted mb-0">Materi pembelajaran yang telah dipublikasikan.</p>
+    </div>
+
+    <form class="row g-2 mb-4" method="get">
+        <div class="col-md-6">
+            <input class="form-control" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="Cari judul atau kategori">
+        </div>
+        <div class="col-md-4">
+            <select class="form-select" name="kategori">
+                <option value="">Semua kategori</option>
+                <?php foreach ($categories as $item): ?>
+                    <option value="<?= htmlspecialchars($item) ?>" <?= $kategori === $item ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($item) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-primary w-100">Cari</button>
+        </div>
+    </form>
+
+    <div class="row g-4">
+        <?php foreach ($items as $m): ?>
+            <div class="col-md-6 col-lg-4">
+                <article class="card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex flex-column">
+                        <span class="badge text-bg-primary align-self-start mb-2">
+                            <?= htmlspecialchars($m['kategori'] ?: 'Umum') ?>
+                        </span>
+                        <h2 class="h5"><?= htmlspecialchars($m['judul_dokumen']) ?></h2>
+                        <p class="text-muted small mb-2">
+                            oleh <?= htmlspecialchars($m['nama_lengkap']) ?> · <?= htmlspecialchars($m['tgl_unggah']) ?>
+                        </p>
+                        <p class="small flex-grow-1">
+                            <?= htmlspecialchars(mb_strimwidth(strip_tags($m['deskripsi'] ?? ''), 0, 160, '…')) ?>
+                        </p>
+                        <?php if (!empty($m['file_path'])): ?>
+                            <a class="btn btn-outline-primary btn-sm align-self-start" 
+                               href="../<?= htmlspecialchars(ltrim($m['file_path'], '/')) ?>" 
+                               target="_blank" rel="noopener">
+                                Lihat / Download
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                </article>
+            </div>
+        <?php endforeach; ?>
+
+        <?php if (!$items): ?>
+            <p class="text-muted">Materi tidak ditemukan.</p>
+        <?php endif; ?>
+    </div>
+
+    <?php if ($pages > 1): ?>
+        <nav class="mt-5">
+            <ul class="pagination justify-content-center">
+                <?php for ($n = 1; $n <= $pages; $n++): ?>
+                    <li class="page-item <?= $n === $page ? 'active' : '' ?>">
+                        <a class="page-link" href="?<?= htmlspecialchars(http_build_query(['q' => $q, 'kategori' => $kategori, 'page' => $n])) ?>">
+                            <?= $n ?>
+                        </a>
+                    </li>
+                <?php endfor; ?>
+            </ul>
+        </nav>
+    <?php endif; ?>
+</main>
+
 <?php include '../includes/footer_portal.html'; ?>

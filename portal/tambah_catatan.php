@@ -1,8 +1,113 @@
 <?php
 session_start();
-if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['Super Admin', 'Admin', 'Anggota'], true)) { header('Location: ../login.html'); exit; }
-$flash = $_SESSION['flash'] ?? null; unset($_SESSION['flash']);
+
+if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['Super Admin', 'Admin', 'Anggota'], true)) {
+    header('Location: ../login.html');
+    exit;
+}
+
+$flash = $_SESSION['flash'] ?? null;
+unset($_SESSION['flash']);
 ?>
+
 <!doctype html>
-<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Tambah Catatan Pengalaman</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"><link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet"></head>
-<body class="bg-light"><nav class="navbar navbar-dark bg-primary"><div class="container"><a class="navbar-brand fw-bold" href="index.html">KMS Computer Club</a><a class="btn btn-sm btn-outline-light" href="../logout.php">Logout</a></div></nav><main class="container py-5"><div class="row justify-content-center"><div class="col-lg-8"><div class="d-flex justify-content-between align-items-center mb-4"><div><h1 class="h3 mb-1">Tambah Catatan Pengalaman</h1><p class="text-muted mb-0">Catatan akan menunggu approval Admin atau Super Admin.</p></div><a class="btn btn-outline-secondary" href="index.html">Kembali</a></div><?php if($flash): ?><div class="alert alert-<?= htmlspecialchars($flash['type']) ?>"><?= htmlspecialchars($flash['msg']) ?></div><?php endif; ?><div class="card border-0 shadow-sm"><form class="card-body p-4" method="post" action="../admin/proses_catatan.php?action=create"><div class="mb-3"><label class="form-label">Judul kegiatan</label><input class="form-control" name="judul_kegiatan" required></div><div class="mb-3"><label class="form-label">Jenis kegiatan</label><select class="form-select" name="jenis_kegiatan" required><option value="">Pilih jenis kegiatan</option><option>Lomba</option><option>Workshop</option><option>Pelatihan</option><option>Seminar</option></select></div><div class="mb-3"><label class="form-label">Kategori</label><input class="form-control" name="kategori"></div><div class="mb-3"><label class="form-label">Pengalaman</label><div id="editor-pengalaman" style="height:180px"></div><input type="hidden" name="pengalaman" id="pengalaman"></div><div class="mb-3"><label class="form-label">Kendala</label><textarea class="form-control" name="kendala" rows="3"></textarea></div><div class="mb-4"><label class="form-label">Solusi</label><textarea class="form-control" name="solusi" rows="3"></textarea></div><button class="btn btn-primary">Kirim Catatan</button></form></div></div></div></main><script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script><script>const editor=new Quill('#editor-pengalaman',{theme:'snow',modules:{toolbar:[['bold','italic','underline'],[{list:'ordered'},{list:'bullet'}],['link'],['clean']]}});document.querySelector('form').addEventListener('submit',()=>document.getElementById('pengalaman').value=editor.root.innerHTML);</script></body></html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tambah Catatan Pengalaman</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+    <nav class="navbar navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">KMS Computer Club</a>
+            <a class="btn btn-sm btn-outline-light" href="../logout.php">Logout</a>
+        </div>
+    </nav>
+
+    <main class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="h3 mb-1">Tambah Catatan Pengalaman</h1>
+                        <p class="text-muted mb-0">Catatan akan menunggu approval Admin atau Super Admin.</p>
+                    </div>
+                    <a class="btn btn-outline-secondary" href="index.html">Kembali</a>
+                </div>
+
+                <?php if ($flash): ?>
+                    <div class="alert alert-<?= htmlspecialchars($flash['type']) ?>">
+                        <?= htmlspecialchars($flash['msg']) ?>
+                    </div>
+                <?php endif; ?>
+
+                <div class="card border-0 shadow-sm">
+                    <form class="card-body p-4" method="post" action="../admin/proses_catatan.php?action=create">
+                        <div class="mb-3">
+                            <label class="form-label">Judul kegiatan</label>
+                            <input class="form-control" name="judul_kegiatan" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Jenis kegiatan</label>
+                            <select class="form-select" name="jenis_kegiatan" required>
+                                <option value="">Pilih jenis kegiatan</option>
+                                <option>Lomba</option>
+                                <option>Workshop</option>
+                                <option>Pelatihan</option>
+                                <option>Seminar</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Kategori</label>
+                            <input class="form-control" name="kategori">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Pengalaman</label>
+                            <div id="editor-pengalaman" style="height:180px"></div>
+                            <input type="hidden" name="pengalaman" id="pengalaman">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Kendala</label>
+                            <textarea class="form-control" name="kendala" rows="3"></textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Solusi</label>
+                            <textarea class="form-control" name="solusi" rows="3"></textarea>
+                        </div>
+
+                        <button class="btn btn-primary">Kirim Catatan</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+    <script>
+        const editor = new Quill('#editor-pengalaman', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link'],
+                    ['clean']
+                ]
+            }
+        });
+
+        document.querySelector('form').addEventListener('submit', function() {
+            document.getElementById('pengalaman').value = editor.root.innerHTML;
+        });
+    </script>
+</body>
+</html>

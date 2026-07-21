@@ -28,7 +28,6 @@ include '../includes/sidebar.php';
         <p class="text-muted mb-0">Super Admin dan Admin dapat mengunggah materi.</p>
     </div>
     <div>
-        <span class="badge text-bg-warning me-2">Pending ditampilkan lebih dahulu</span>
         <a class="btn btn-primary" href="tambah_materi.php">
             <i class="bi bi-upload me-1"></i>Tambah Materi
         </a>
@@ -69,38 +68,13 @@ include '../includes/sidebar.php';
                             <?php elseif ($m['status'] === 'Pending'): ?>
                                 <span class="text-muted small">Menunggu Super Admin</span>
                             <?php else: ?>
-                                <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#edit<?= $m['id_arsip'] ?>">Edit</button>
+                                <a class="btn btn-sm btn-outline-warning" href="edit_materi.php?id=<?= $m['id_arsip'] ?>"><i class="bi bi-pencil me-1"></i>Edit</a>
                                 <a class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus materi ini?')" href="proses_materi.php?action=delete&id=<?= $m['id_arsip'] ?>">Hapus</a>
                             <?php endif; ?>
                         </td>
                     </tr>
 
-                    <!-- Modal Edit -->
-                    <div class="modal fade" id="edit<?= $m['id_arsip'] ?>">
-                        <div class="modal-dialog">
-                            <form class="modal-content" method="post" action="proses_materi.php?action=edit">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Edit Materi</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <input type="hidden" name="id_arsip" value="<?= $m['id_arsip'] ?>">
-                                    <input class="form-control mb-3" name="judul_dokumen" value="<?= htmlspecialchars($m['judul_dokumen']) ?>" required>
-                                    <input class="form-control mb-3" name="kategori" value="<?= htmlspecialchars($m['kategori']) ?>">
-                                    <textarea class="form-control mb-3" name="deskripsi" rows="3"><?= htmlspecialchars($m['deskripsi']) ?></textarea>
-                                    <?php if ($_SESSION['role'] === 'Super Admin'): ?>
-                                        <select class="form-select" name="status">
-                                            <option value="Published" <?= $m['status'] === 'Published' ? 'selected' : '' ?>>Published</option>
-                                            <option value="Rejected" <?= $m['status'] === 'Rejected' ? 'selected' : '' ?>>Rejected</option>
-                                        </select>
-                                    <?php endif; ?>
-                                </div>
-                                <div class="modal-footer">
-                                    <button class="btn btn-primary">Simpan</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+
                 <?php endforeach; ?>
 
                 <?php if (!$materi): ?>
