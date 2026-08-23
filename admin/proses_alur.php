@@ -18,13 +18,18 @@ $id = (int)($_POST['id_alur'] ?? $_GET['id'] ?? 0);
 
 try {
     if ($action === 'create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-        $status = $_POST['status'] ?? 'Draft';
-        if (!in_array($status, ['Draft', 'Published'], true)) {
-            throw new RuntimeException('Status tidak valid.');
+        // Hanya Super Admin yang dapat menentukan status; Admin selalu Draft
+        if ($_SESSION['role'] === 'Super Admin') {
+            $status = $_POST['status'] ?? 'Draft';
+            if (!in_array($status, ['Draft', 'Published'], true)) {
+                throw new RuntimeException('Status tidak valid.');
+            }
+        } else {
+            $status = 'Draft';
         }
         
         $conn->prepare(
-            'INSERT INTO ALUR_PEMBELAJARAN (id_user, nama_alur, tingkat_level, status, tgl_dibuat) 
+            'INSERT INTO alur_pembelajaran (id_user, nama_alur, tingkat_level, status, tgl_dibuat) 
             VALUES (:user, :nama, :level, :status, CURDATE())'
         )->execute([
             ':user' => $_SESSION['id_user'],
@@ -37,13 +42,25 @@ try {
     }
 
     if ($action === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST' && $id > 0) {
-        $status = $_POST['status'] ?? 'Draft';
-        if (!in_array($status, ['Draft', 'Published'], true)) {
-            throw new RuntimeException('Status tidak valid.');
+        // Hanya Super Admin yang dapat mengubah status; Admin mempertahankan status lama
+        if ($_SESSION['role'] === 'Super Admin') {
+            $status = $_POST['status'] ?? 'Draft';
+            if (!in_array($status, ['Draft', 'Published'], true)) {
+                throw new RuntimeException('Status tidak valid.');
+            }
+        } else {
+            // Ambil status yang sudah ada dari database
+            $stmtStatus = $conn->prepare('SELECT status FROM alur_pembelajaran WHERE id_alur = :id');
+            $stmtStatus->execute([':id' => $id]);
+            $existing = $stmtStatus->fetch();
+            if (!$existing) {
+                throw new RuntimeException('Alur tidak ditemukan.');
+            }
+            $status = $existing['status'];
         }
         
         $conn->prepare(
-            'UPDATE ALUR_PEMBELAJARAN 
+            'UPDATE alur_pembelajaran 
             SET nama_alur = :nama, tingkat_level = :level, status = :status 
             WHERE id_alur = :id'
         )->execute([
@@ -57,7 +74,7 @@ try {
     }
 
     if ($action === 'delete' && $id > 0) {
-        $conn->prepare('DELETE FROM ALUR_PEMBELAJARAN WHERE id_alur = :id')->execute([':id' => $id]);
+        $conn->prepare('DELETE FROM alur_pembelajaran WHERE id_alur = :id')->execute([':id' => $id]);
         alurBack('success', 'Alur berhasil dihapus.');
     }
 
@@ -68,10 +85,10 @@ try {
         }
         
         $conn->prepare(
-            'INSERT INTO DETAIL_ALUR (id_alur, id_arsip) 
+            'INSERT INTO detail_alur (id_alur, id_arsip) 
             SELECT :alur, :arsip 
             WHERE NOT EXISTS (
-            SELECT 1 FROM DETAIL_ALUR 
+            SELECT 1 FROM detail_alur 
             WHERE id_alur = :alur2 AND id_arsip = :arsip2
             )'
         )->execute([
@@ -90,7 +107,7 @@ try {
             throw new RuntimeException('Detail alur tidak valid.');
         }
         
-        $conn->prepare('DELETE FROM DETAIL_ALUR WHERE id_detail = :id')->execute([':id' => $detail]);
+        $conn->prepare('DELETE FROM detail_alur WHERE id_detail = :id')->execute([':id' => $detail]);
         alurBack('success', 'Materi dihapus dari alur.');
     }
 

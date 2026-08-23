@@ -17,6 +17,30 @@ function validRole(string $role): bool {
     return in_array($role, ['Super Admin', 'Admin', 'Anggota'], true);
 }
 
+function handleKartuPelajarUpload(): ?string {
+    if (empty($_FILES['kartu_pelajar']['name'])) return null;
+    $file = $_FILES['kartu_pelajar'];
+    if ($file['error'] !== UPLOAD_ERR_OK || $file['size'] > 2 * 1024 * 1024) {
+        throw new RuntimeException('Gagal mengunggah kartu pelajar atau ukuran terlalu besar.');
+    }
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mime  = finfo_file($finfo, $file['tmp_name']);
+    finfo_close($finfo);
+    if (!in_array($mime, ['image/jpeg', 'image/png'], true)) {
+        throw new RuntimeException('Format kartu pelajar harus JPG atau PNG.');
+    }
+    $ext    = $mime === 'image/png' ? 'png' : 'jpg';
+    $dir    = '../assets/uploads/id_cards';
+    if (!is_dir($dir) && !mkdir($dir, 0775, true)) {
+        throw new RuntimeException('Gagal membuat folder upload.');
+    }
+    $fname  = 'kp_' . uniqid('', true) . '.' . $ext;
+    if (!move_uploaded_file($file['tmp_name'], $dir . '/' . $fname)) {
+        throw new RuntimeException('Gagal menyimpan kartu pelajar.');
+    }
+    return 'assets/uploads/id_cards/' . $fname;
+}
+
 $action = $_GET['action'] ?? '';
 $id = (int) ($_POST['id_user'] ?? $_GET['id'] ?? 0);
 
@@ -31,16 +55,21 @@ try {
             throw new RuntimeException('Role tidak valid.');
         }
         
+        $kartuPath = handleKartuPelajarUpload();
+        $alasan = trim($_POST['alasan_masuk'] ?? '');
+        
         $stmt = $conn->prepare(
-            'INSERT INTO PENGGUNA (nama_lengkap, kelas, username, password, role) 
-             VALUES (:nama, :kelas, :username, :password, :role)'
+            'INSERT INTO pengguna (nama_lengkap, kelas, username, password, role, kartu_pelajar, alasan_masuk, status_akun) 
+             VALUES (:nama, :kelas, :username, :password, :role, :kartu, :alasan, "Aktif")'
         );
         $stmt->execute([
             ':nama' => trim($_POST['nama_lengkap'] ?? ''),
             ':kelas' => trim($_POST['kelas'] ?? ''),
             ':username' => trim($_POST['username'] ?? ''),
             ':password' => password_hash($_POST['password'] ?? '', PASSWORD_DEFAULT),
-            ':role' => $role
+            ':role' => $role,
+            ':kartu' => $kartuPath,
+            ':alasan' => $alasan
         ]);
         
         back('Pengguna berhasil ditambahkan.');
@@ -49,7 +78,7 @@ try {
     if ($action === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST' && $id > 0) {
         $role = $_POST['role'] ?? 'Anggota';
         
-        $current = $conn->prepare('SELECT role FROM PENGGUNA WHERE id_user = :id');
+        $current = $conn->prepare('SELECT role FROM pengguna WHERE id_user = :id');
         $current->execute([':id' => $id]);
         $currentRole = $current->fetchColumn();
         
@@ -66,19 +95,28 @@ try {
             throw new RuntimeException('Role tidak valid.');
         }
         
+        $kartuPath = handleKartuPelajarUpload();
+        $alasan = trim($_POST['alasan_masuk'] ?? '');
+
         $params = [
             ':id' => $id,
             ':nama' => trim($_POST['nama_lengkap'] ?? ''),
             ':kelas' => trim($_POST['kelas'] ?? ''),
             ':username' => trim($_POST['username'] ?? ''),
-            ':role' => $role
+            ':role' => $role,
+            ':alasan' => $alasan
         ];
         
-        $sql = 'UPDATE PENGGUNA SET nama_lengkap = :nama, kelas = :kelas, username = :username, role = :role';
+        $sql = 'UPDATE pengguna SET nama_lengkap = :nama, kelas = :kelas, username = :username, role = :role, alasan_masuk = :alasan';
         
         if (($_POST['password'] ?? '') !== '') {
             $sql .= ', password = :password';
             $params[':password'] = password_hash($_POST['password'], PASSWORD_DEFAULT);
+        }
+        
+        if ($kartuPath !== null) {
+            $sql .= ', kartu_pelajar = :kartu';
+            $params[':kartu'] = $kartuPath;
         }
         
         $stmt = $conn->prepare($sql . ' WHERE id_user = :id');
@@ -92,7 +130,7 @@ try {
             throw new RuntimeException('Akun yang sedang digunakan tidak dapat dihapus.');
         }
         
-        $conn->prepare('DELETE FROM PENGGUNA WHERE id_user = :id')->execute([':id' => $id]);
+        $conn->prepare('DELETE FROM pengguna WHERE id_user = :id')->execute([':id' => $id]);
         back('Pengguna berhasil dihapus.');
     }
 
