@@ -1,0 +1,10 @@
+Options -Indexes
+
+# Izinkan akses ke semua file PHP (termasuk di subfolder)
+<FilesMatch "\.php$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+
+# Jangan tampilkan directory listing
+DirectoryIndex index.php index.html
