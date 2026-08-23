@@ -47,7 +47,7 @@ function extractTextFromPDF_Auto($filepath) {
 // Fungsi Utama: Mengambil data Materi terbaru dari DB (Menggunakan PDO)
 function triggerEmbedMateri($conn, $id_arsip) {
     $id_aman = intval($id_arsip);
-    $query = "SELECT judul_dokumen, kategori, deskripsi, file_path, status FROM ARSIP_MATERI WHERE id_arsip = $id_aman";
+    $query = "SELECT judul_dokumen, kategori, deskripsi, file_path, status FROM arsip_materi WHERE id_arsip = $id_aman";
     
     $stmt = $conn->query($query);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -82,8 +82,12 @@ function triggerEmbedMateri($conn, $id_arsip) {
         if ($vektor) {
             $metadata = [
                 'teks_asli' => mb_substr(trim($teksGabungan), 0, 10000),
-                'tipe_sumber' => 'Materi'
+                'tipe_sumber' => 'Materi',
+                'judul_dokumen' => $row['judul_dokumen']
             ];
+            if (!empty($row['file_path'])) {
+                $metadata['url_download'] = $row['file_path'];
+            }
             upsertSinglePinecone('materi_' . $id_aman, $vektor, $metadata);
         }
     }
@@ -135,7 +139,7 @@ function upsertSinglePinecone($id, $vector, $metadata) {
 // Fungsi Utama: Mengambil data catatan terbaru dari DB (Menggunakan PDO)
 function triggerEmbedCatatan($conn, $id_catatan) {
     $id_aman = intval($id_catatan);
-    $query = "SELECT judul_kegiatan, jenis_kegiatan, kategori, pengalaman, kendala, solusi, status FROM CATATAN_PENGALAMAN WHERE id_catatan = $id_aman";
+    $query = "SELECT judul_kegiatan, jenis_kegiatan, kategori, pengalaman, kendala, solusi, status FROM catatan_pengalaman WHERE id_catatan = $id_aman";
     
     // Menggunakan PDO query sesuai dengan format koneksi Anda
     $stmt = $conn->query($query);
@@ -156,10 +160,61 @@ function triggerEmbedCatatan($conn, $id_catatan) {
         $vektor = getSingleEmbedding($teks);
         if ($vektor) {
             $metadata = [
-                'teks_asli' => mb_substr(trim($teks), 0, 10000),
-                'tipe_sumber' => 'Catatan'
+                'teks_asli'     => mb_substr(trim($teks), 0, 10000),
+                'tipe_sumber'   => 'Catatan',
+                'judul_dokumen' => $row['judul_kegiatan'],
+                'url_download'  => 'portal/detail_catatan.php?id=' . $id_aman,
             ];
             upsertSinglePinecone('catatan_' . $id_aman, $vektor, $metadata);
+        }
+    }
+}
+
+// Fungsi Utama: Mengambil data arsip_organisasi dari DB dan embed ke Pinecone
+function triggerEmbedOrganisasi($conn, $id_organisasi) {
+    $id_aman = intval($id_organisasi);
+    $query = "SELECT judul_dokumen, kategori_organisasi, deskripsi, file_path, status FROM arsip_organisasi WHERE id_organisasi = $id_aman";
+
+    $stmt = $conn->query($query);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($row && $row['status'] === 'Published') {
+        // Rangkai teks dasar dari database
+        $teks = implode(' | ', array_filter([
+            $row['judul_dokumen'],
+            $row['kategori_organisasi'],
+            strip_tags($row['deskripsi'] ?? '')
+        ]));
+
+        // Cek dan sedot isi file jika ada (PDF atau PPTX)
+        $teksFile = "";
+        if (!empty($row['file_path'])) {
+            $fullPath = __DIR__ . '/../' . $row['file_path'];
+            if (file_exists($fullPath)) {
+                $ext = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
+                if ($ext === 'pptx') {
+                    $teksFile = extractTextFromPPTX_Auto($fullPath);
+                } elseif ($ext === 'pdf') {
+                    $teksFile = extractTextFromPDF_Auto($fullPath);
+                }
+            }
+        }
+
+        // Gabungkan semuanya
+        $teksGabungan = $teks . ($teksFile ? " | Isi Dokumen: " . $teksFile : "");
+
+        // Ubah jadi vektor dan simpan ke Pinecone
+        $vektor = getSingleEmbedding($teksGabungan);
+        if ($vektor) {
+            $metadata = [
+                'teks_asli'     => mb_substr(trim($teksGabungan), 0, 10000),
+                'tipe_sumber'   => 'Organisasi',
+                'judul_dokumen' => $row['judul_dokumen'],
+            ];
+            if (!empty($row['file_path'])) {
+                $metadata['url_download'] = $row['file_path'];
+            }
+            upsertSinglePinecone('organisasi_' . $id_aman, $vektor, $metadata);
         }
     }
 }

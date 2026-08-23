@@ -1,4 +1,14 @@
-</main></div></div>
-<footer class="border-top bg-white py-3 text-center text-muted small">&copy; <?= date('Y') ?> KMS Computer Club.</footer>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body></html>
+  </div>
+  <footer class="border-t border-slate-700/30 bg-[#0f172a] py-3 px-7 mt-auto">
+    <div class="flex items-center justify-between">
+      <p class="text-xs text-slate-500">
+        &copy; <?= date('Y') ?> <span class="text-slate-400 font-medium">KMS Computer Club</span> &middot; SMAN 1 Rancaekek
+      </p>
+    </div>
+  </footer>
+</main>
+</div>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>

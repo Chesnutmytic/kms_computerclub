@@ -44,7 +44,7 @@ define('LLM_GEMINI_API_KEY', 'AIzaSyBNpYkP5vPTOTCjQvnFtd4jiQdufg5wP9w');
 define('LLM_GEMINI_MODEL',   'gemini-2.5-flash');
 
 // ─── Load search_vector.php ─────────────────────────────────────────────────
-require_once __DIR__ . '/search_vector.php';
+require_once __DIR__ . '/../rag/search_vector.php';
 
 // ─── 1. Retrieval: ambil konteks relevan dari Pinecone ───────────────────────
 $retrievalData = getRelevantContext($pertanyaan);
@@ -58,7 +58,7 @@ if (empty($konteksArr)) {
     $konteksTeks = implode("\n\n", $konteksArr);
 }
 
-// ─── 2. Susun prompt ───────────────────────────────────────────────────
+// ─── 2. Susun prompt ketat ───────────────────────────────────────────────────
 $systemPrompt = <<<PROMPT
 Anda adalah asisten AI cerdas untuk Knowledge Management System Computer Club SMAN 1 Rancaekek.
 Tugas Anda HANYA menjawab berdasarkan Konteks yang diberikan.
@@ -123,9 +123,17 @@ $jawaban = $data['candidates'][0]['content']['parts'][0]['text']
 if (!empty($referensiArr)) {
     $jawaban .= "\n\n---\n**Sumber Referensi:**\n";
     foreach ($referensiArr as $ref) {
-        $url = htmlspecialchars($ref['url_download']);
+        $url   = htmlspecialchars($ref['url_download']);
         $judul = htmlspecialchars($ref['judul_dokumen']);
-        $jawaban .= "- <a href=\"../{$url}\" target=\"_blank\" class=\"text-indigo-500 hover:underline font-semibold\" download>{$judul}</a>\n";
+
+        // Bedakan: link catatan pengalaman vs file materi/organisasi
+        if (strpos($ref['url_download'], 'detail_catatan') !== false) {
+            // Catatan: tampilkan sebagai link "Lihat Detail"
+            $jawaban .= "- <a href=\"../{$url}\" target=\"_blank\" class=\"text-emerald-600 hover:underline font-semibold\">📝 {$judul}</a>\n";
+        } else {
+            // Materi / Organisasi: tampilkan sebagai tombol download
+            $jawaban .= "- <a href=\"../{$url}\" target=\"_blank\" class=\"text-indigo-500 hover:underline font-semibold\" download>{$judul}</a>\n";
+        }
     }
 }
 

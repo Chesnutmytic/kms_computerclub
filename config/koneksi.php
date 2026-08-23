@@ -1,8 +1,23 @@
 <?php
-$host     = 'localhost';
-$dbname   = 'km_computerclub';
-$username = 'root';   
-$password = '';        
+
+// Load Composer autoloader
+$autoload = __DIR__ . '/../vendor/autoload.php';
+if (file_exists($autoload)) {
+    require_once $autoload;
+}
+
+// Load .env dari root project
+$dotenvPath = __DIR__ . '/..';
+if (file_exists($dotenvPath . '/.env')) {
+    $dotenv = Dotenv\Dotenv::createImmutable($dotenvPath);
+    $dotenv->load();
+}
+
+// Ambil konfigurasi dari .env, fallback ke nilai default (lokal)
+$host     = $_ENV['DB_HOST'] ?? 'localhost';
+$dbname   = $_ENV['DB_NAME'] ?? 'km_computerclub';
+$username = $_ENV['DB_USER'] ?? 'root';
+$password = $_ENV['DB_PASS'] ?? '';
 
 try {
     $conn = new PDO(

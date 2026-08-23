@@ -3,7 +3,7 @@
  * generate_embed.php
  * ==================
  * Skrip admin (one-time / berkala) untuk:
- *   1. Mengambil semua data Published dari DB (ARSIP_MATERI, CATATAN_PENGALAMAN, ALUR_PEMBELAJARAN)
+ *   1. Mengambil semua data Published dari DB (arsip_materi, catatan_pengalaman, alur_pembelajaran)
  *   2. Mengubah teks gabungan menjadi vektor via Gemini Embedding API
  *   3. Melakukan upsert ke Pinecone dengan metadata teks_asli & tipe_sumber
  *
@@ -145,13 +145,21 @@ function processBatch(array $records, string $tipeSumber): void
         }
         echo "OK (" . count($vector) . " dim)\n";
 
+        $metadata = [
+            'teks_asli'   => $teks,
+            'tipe_sumber' => $tipeSumber,
+        ];
+        if (isset($row['_judul_dokumen'])) {
+            $metadata['judul_dokumen'] = $row['_judul_dokumen'];
+        }
+        if (!empty($row['_url_download'])) {
+            $metadata['url_download'] = $row['_url_download'];
+        }
+
         $batch[] = [
             'id'       => $id,
             'values'   => $vector,
-            'metadata' => [
-                'teks_asli'   => $teks,
-                'tipe_sumber' => $tipeSumber,
-            ],
+            'metadata' => $metadata,
         ];
 
         // Upsert per batch
@@ -177,11 +185,11 @@ function processBatch(array $records, string $tipeSumber): void
 echo "=== GENERATE EMBEDDING — KMS Computer Club ===\n";
 echo "Waktu: " . date('Y-m-d H:i:s') . "\n\n";
 
-// ─── 1. ARSIP_MATERI ────────────────────────────────────────────────────────
-echo "--- [1/3] ARSIP_MATERI ---\n";
+// ─── 1. arsip_materi ────────────────────────────────────────────────────────
+echo "--- [1/3] arsip_materi ---\n";
 $stmt = $conn->query(
     "SELECT id_arsip, judul_dokumen, kategori, deskripsi, file_path
-     FROM ARSIP_MATERI
+     FROM arsip_materi
      WHERE status = 'Published'"
 );
 $rows = [];
@@ -214,18 +222,20 @@ foreach ($stmt->fetchAll() as $r) {
     $teksGabungan = $teks . " | Isi Materi: " . $teksFile;
 
     $rows[] = [
-        '_pinecone_id' => 'materi_' . $r['id_arsip'],
-        '_teks'        => mb_substr(trim($teksGabungan), 0, 10000), 
+        '_pinecone_id'   => 'materi_' . $r['id_arsip'],
+        '_teks'          => mb_substr(trim($teksGabungan), 0, 10000), 
+        '_judul_dokumen' => $r['judul_dokumen'],
+        '_url_download'  => !empty($r['file_path']) ? $r['file_path'] : null,
     ];
 }
 echo "  Ditemukan " . count($rows) . " record.\n";
 processBatch($rows, 'Materi');
 
-// ─── 2. CATATAN_PENGALAMAN ──────────────────────────────────────────────────
-echo "--- [2/3] CATATAN_PENGALAMAN ---\n";
+// ─── 2. catatan_pengalaman ──────────────────────────────────────────────────
+echo "--- [2/3] catatan_pengalaman ---\n";
 $stmt = $conn->query(
     "SELECT id_catatan, judul_kegiatan, jenis_kegiatan, kategori, pengalaman, kendala, solusi
-     FROM CATATAN_PENGALAMAN
+     FROM catatan_pengalaman
      WHERE status = 'Published'"
 );
 $rows = [];
@@ -239,18 +249,20 @@ foreach ($stmt->fetchAll() as $r) {
         $r['solusi']  ?? '',
     ]));
     $rows[] = [
-        '_pinecone_id' => 'catatan_' . $r['id_catatan'],
-        '_teks'        => mb_substr(trim($teks), 0, 10000),
+        '_pinecone_id'   => 'catatan_' . $r['id_catatan'],
+        '_teks'          => mb_substr(trim($teks), 0, 10000),
+        '_judul_dokumen' => $r['judul_kegiatan'],
+        '_url_download'  => 'portal/detail_catatan.php?id=' . $r['id_catatan'],
     ];
 }
 echo "  Ditemukan " . count($rows) . " record.\n";
 processBatch($rows, 'Catatan');
 
-// ─── 3. ALUR_PEMBELAJARAN ───────────────────────────────────────────────────
-echo "--- [3/3] ALUR_PEMBELAJARAN ---\n";
+// ─── 3. alur_pembelajaran ───────────────────────────────────────────────────
+echo "--- [3/3] alur_pembelajaran ---\n";
 $stmt = $conn->query(
     "SELECT id_alur, nama_alur, tingkat_level
-     FROM ALUR_PEMBELAJARAN
+     FROM alur_pembelajaran
      WHERE status = 'Published'"
 );
 $rows = [];
@@ -266,5 +278,50 @@ foreach ($stmt->fetchAll() as $r) {
 }
 echo "  Ditemukan " . count($rows) . " record.\n";
 processBatch($rows, 'Alur');
+
+// ─── 4. arsip_organisasi ─────────────────────────────────────────────────────
+echo "--- [4/4] arsip_organisasi ---\n";
+$stmt = $conn->query(
+    "SELECT id_organisasi, judul_dokumen, kategori_organisasi, deskripsi, file_path
+     FROM arsip_organisasi
+     WHERE status = 'Published'"
+);
+$rows = [];
+foreach ($stmt->fetchAll() as $r) {
+    $teks = implode(' | ', array_filter([
+        $r['judul_dokumen'],
+        $r['kategori_organisasi'],
+        strip_tags($r['deskripsi'] ?? ''),
+    ]));
+
+    // --- PROSES BACA ISI FILE ---
+    $teksFile = "";
+    if (!empty($r['file_path'])) {
+        $fullPath = __DIR__ . '/../' . $r['file_path'];
+
+        if (file_exists($fullPath)) {
+            $ext = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
+
+            if ($ext === 'pptx') {
+                echo "  [INFO] Membaca isi PPTX ID=" . $r['id_organisasi'] . "...\n";
+                $teksFile = extractTextFromPPTX($fullPath);
+            } elseif ($ext === 'pdf') {
+                echo "  [INFO] Membaca isi PDF ID=" . $r['id_organisasi'] . "...\n";
+                $teksFile = extractTextFromPDF($fullPath);
+            }
+        }
+    }
+
+    $teksGabungan = $teks . ($teksFile ? " | Isi Dokumen: " . $teksFile : "");
+
+    $rows[] = [
+        '_pinecone_id'   => 'organisasi_' . $r['id_organisasi'],
+        '_teks'          => mb_substr(trim($teksGabungan), 0, 10000),
+        '_judul_dokumen' => $r['judul_dokumen'],
+        '_url_download'  => !empty($r['file_path']) ? $r['file_path'] : null,
+    ];
+}
+echo "  Ditemukan " . count($rows) . " record.\n";
+processBatch($rows, 'Organisasi');
 
 echo "=== SELESAI ===\n";

@@ -95,34 +95,55 @@ function sv_queryPinecone(array $vector): array
 
 /**
  * Fungsi utama yang dipanggil dari prompt_llm.php.
- * Mengembalikan array berisi teks_asli yang relevan.
+ * Mengembalikan array berisi teks_asli yang relevan dan sumber referensi.
  *
- * @return string[]
+ * @return array{konteks_teks: string[], sumber_referensi: array[]}
  */
 function getRelevantContext(string $pertanyaan): array
 {
     // 1. Embed pertanyaan
     $vector = sv_getEmbedding($pertanyaan);
     if ($vector === null) {
-        return [];
+        return ['konteks_teks' => [], 'sumber_referensi' => []];
     }
 
     // 2. Query Pinecone
     $matches = sv_queryPinecone($vector);
     if (empty($matches)) {
-        return [];
+        return ['konteks_teks' => [], 'sumber_referensi' => []];
     }
 
     // 3. Kumpulkan teks_asli dari metadata
     $konteks = [];
+    $referensi = [];
+    $seenUrls = [];
+
     foreach ($matches as $match) {
         $teks = $match['metadata']['teks_asli'] ?? '';
+        $score = round($match['score'] ?? 0, 4);
+        
         if ($teks !== '') {
-            $tipe      = $match['metadata']['tipe_sumber'] ?? 'Sumber';
-            $score     = round($match['score'] ?? 0, 4);
+            $tipe = $match['metadata']['tipe_sumber'] ?? 'Sumber';
             $konteks[] = "[{$tipe} | score={$score}] {$teks}";
+        }
+
+        // Kumpulkan referensi jika score > 0.6
+        if ($score > 0.6) {
+            $judul = $match['metadata']['judul_dokumen'] ?? null;
+            $url = $match['metadata']['url_download'] ?? null;
+            
+            if ($judul && $url && !isset($seenUrls[$url])) {
+                $referensi[] = [
+                    'judul_dokumen' => $judul,
+                    'url_download' => $url
+                ];
+                $seenUrls[$url] = true;
+            }
         }
     }
 
-    return $konteks;
+    return [
+        'konteks_teks' => $konteks,
+        'sumber_referensi' => $referensi
+    ];
 }
