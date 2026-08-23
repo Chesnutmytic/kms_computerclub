@@ -1,0 +1,13 @@
+# Environment
+.env
+.env.production
+
+# Composer
+vendor/
+
+# Sistem
+.DS_Store
+Thumbs.db
+
+# Log
+*.log
