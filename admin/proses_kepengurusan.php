@@ -19,14 +19,64 @@ function kepBack(string $type, string $msg): never
     exit;
 }
 
+/**
+ * Assign pengurus ke kepengurusan dan ubah role mereka ke Admin.
+ * Pengurus yang dihapus dari daftar dikembalikan ke Anggota (kecuali Super Admin).
+ *
+ * @param PDO   $conn
+ * @param int   $idKep      ID masa kepengurusan
+ * @param array $newUserIds Array id_user yang akan jadi pengurus
+ */
+function syncPengurus(PDO $conn, int $idKep, array $newUserIds): void
+{
+    // Ambil pengurus lama
+    $stmtLama = $conn->prepare(
+        "SELECT pk.id_user FROM pengurus_kepengurusan pk WHERE pk.id_kepengurusan = :id"
+    );
+    $stmtLama->execute([':id' => $idKep]);
+    $oldUserIds = $stmtLama->fetchAll(PDO::FETCH_COLUMN);
+
+    $toAdd    = array_diff($newUserIds, $oldUserIds);
+    $toRemove = array_diff($oldUserIds, $newUserIds);
+
+    // Tambah pengurus baru
+    if (!empty($toAdd)) {
+        $stmtIns = $conn->prepare(
+            "INSERT IGNORE INTO pengurus_kepengurusan (id_kepengurusan, id_user) VALUES (:kep, :usr)"
+        );
+        $stmtRole = $conn->prepare(
+            "UPDATE pengguna SET role = 'Admin' WHERE id_user = :usr AND role = 'Anggota'"
+        );
+        foreach ($toAdd as $uid) {
+            $stmtIns->execute([':kep' => $idKep, ':usr' => $uid]);
+            $stmtRole->execute([':usr' => $uid]);
+        }
+    }
+
+    // Hapus pengurus lama (revert role ke Anggota kecuali Super Admin)
+    if (!empty($toRemove)) {
+        $stmtDel = $conn->prepare(
+            "DELETE FROM pengurus_kepengurusan WHERE id_kepengurusan = :kep AND id_user = :usr"
+        );
+        $stmtRevert = $conn->prepare(
+            "UPDATE pengguna SET role = 'Anggota'
+             WHERE id_user = :usr AND role = 'Admin'"
+        );
+        foreach ($toRemove as $uid) {
+            $stmtDel->execute([':kep' => $idKep, ':usr' => $uid]);
+            $stmtRevert->execute([':usr' => $uid]);
+        }
+    }
+}
+
 $action = $_GET['action'] ?? '';
 $id     = (int) ($_GET['id'] ?? $_POST['id_kepengurusan'] ?? 0);
 
 try {
     // ── CREATE ──────────────────────────────────────────────────────────────────
     if ($action === 'create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-        $tahun  = trim($_POST['tahun_ajaran'] ?? '');
-        $nama   = trim($_POST['nama_kepengurusan'] ?? '') ?: null;
+        $tahun    = trim($_POST['tahun_ajaran'] ?? '');
+        $nama     = trim($_POST['nama_kepengurusan'] ?? '') ?: null;
         $tglMulai = trim($_POST['tgl_mulai'] ?? '');
 
         if ($tahun === '') {
@@ -54,6 +104,8 @@ try {
             );
         }
 
+        $conn->beginTransaction();
+
         $conn->prepare(
             "INSERT INTO masa_kepengurusan
              (tahun_ajaran, nama_kepengurusan, id_pembuat, tgl_mulai)
@@ -65,7 +117,49 @@ try {
             ':tgl'     => $tglMulai,
         ]);
 
-        kepBack('success', "Masa Kepengurusan {$tahun} berhasil dibuat.");
+        $newKepId = (int) $conn->lastInsertId();
+
+        // Assign pengurus jika ada yang dipilih
+        $pengurusIds = array_map('intval', (array) ($_POST['pengurus'] ?? []));
+        $pengurusIds = array_filter($pengurusIds, fn($v) => $v > 0);
+        if (!empty($pengurusIds)) {
+            syncPengurus($conn, $newKepId, array_values($pengurusIds));
+        }
+
+        $conn->commit();
+
+        $jumlahPengurus = count($pengurusIds);
+        $msgPengurus    = $jumlahPengurus > 0 ? " {$jumlahPengurus} pengurus berhasil di-assign." : '';
+        kepBack('success', "Masa Kepengurusan {$tahun} berhasil dibuat.{$msgPengurus}");
+    }
+
+    // ── ASSIGN PENGURUS ───────────────────────────────────────────────────────
+    if ($action === 'assign_pengurus' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        if ($id <= 0) {
+            throw new RuntimeException('ID kepengurusan tidak valid.');
+        }
+
+        $kep = $conn->prepare(
+            "SELECT id_kepengurusan, tahun_ajaran, status FROM masa_kepengurusan WHERE id_kepengurusan = :id"
+        );
+        $kep->execute([':id' => $id]);
+        $kep = $kep->fetch(PDO::FETCH_ASSOC);
+
+        if (!$kep) {
+            throw new RuntimeException('Masa kepengurusan tidak ditemukan.');
+        }
+        if ($kep['status'] !== 'Aktif') {
+            throw new RuntimeException('Pengurus hanya dapat dikelola pada masa kepengurusan yang Aktif.');
+        }
+
+        $pengurusIds = array_map('intval', (array) ($_POST['pengurus'] ?? []));
+        $pengurusIds = array_filter($pengurusIds, fn($v) => $v > 0);
+
+        $conn->beginTransaction();
+        syncPengurus($conn, $id, array_values($pengurusIds));
+        $conn->commit();
+
+        kepBack('success', "Daftar pengurus kepengurusan \"{$kep['tahun_ajaran']}\" berhasil diperbarui.");
     }
 
     // ── ARSIPKAN ─────────────────────────────────────────────────────────────────
@@ -113,14 +207,31 @@ try {
             $jumlahReset = 0;
         }
 
+        // 4. Revert role pengurus ke Anggota (kecuali Super Admin)
+        $pengurusIds = $conn->prepare(
+            "SELECT id_user FROM pengurus_kepengurusan WHERE id_kepengurusan = :id"
+        );
+        $pengurusIds->execute([':id' => $id]);
+        $pengurusIds = $pengurusIds->fetchAll(PDO::FETCH_COLUMN);
+
+        $jumlahRevert = 0;
+        if (!empty($pengurusIds)) {
+            $inPengurus = implode(',', array_fill(0, count($pengurusIds), '?'));
+            $stmtRevert = $conn->prepare(
+                "UPDATE pengguna SET role = 'Anggota'
+                 WHERE id_user IN ($inPengurus) AND role = 'Admin'"
+            );
+            $stmtRevert->execute($pengurusIds);
+            $jumlahRevert = $stmtRevert->rowCount();
+        }
+
         $conn->commit();
 
+        $msgAlur    = $jumlahReset > 0 ? " {$jumlahReset} item alur belajar telah direset." : ' Tidak ada alur yang perlu direset.';
+        $msgRevert  = $jumlahRevert > 0 ? " {$jumlahRevert} pengurus dikembalikan menjadi Anggota." : '';
         kepBack(
             'success',
-            "Masa Kepengurusan \"{$kep['tahun_ajaran']}\" berhasil diarsipkan. " .
-            ($jumlahReset > 0
-                ? "{$jumlahReset} item alur belajar telah direset."
-                : 'Tidak ada alur yang perlu direset.')
+            "Masa Kepengurusan \"{$kep['tahun_ajaran']}\" berhasil diarsipkan.{$msgAlur}{$msgRevert}"
         );
     }
 

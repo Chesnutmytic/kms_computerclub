@@ -3,164 +3,577 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Daftar Akun — KMS Computer Club</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Daftar Anggota — KMS Computer Club</title>
+  <meta name="description" content="Daftar menjadi anggota KMS Computer Club SMAN 1 Rancaekek.">
+  <meta name="theme-color" content="#ffffff">
+
+  <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-  <style>body { font-family: 'Inter', sans-serif; }</style>
-</head>
-<body class="min-h-screen bg-gradient-to-br from-gray-950 via-indigo-950 to-gray-900 flex items-center justify-center p-4 py-10">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-<div class="w-full max-w-md">
-  <!-- Brand -->
-  <div class="text-center mb-8">
-    <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600 shadow-2xl shadow-indigo-500/40 mb-4">
-      <i data-lucide="user-plus" class="w-8 h-8 text-white"></i>
-    </div>
-    <h1 class="text-2xl font-bold text-white tracking-tight">Daftar Anggota</h1>
-    <p class="text-sm text-gray-400 mt-1">KMS Computer Club SMAN 1 Rancaekek</p>
-  </div>
-
-  <!-- Card -->
-  <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-8">
-    <div id="alertBox" class="mb-4"></div>
-
-    <form action="proses_register.php" method="POST" id="registerForm" enctype="multipart/form-data" class="space-y-4">
-      <div>
-        <label for="nama_lengkap" class="block text-sm font-medium text-gray-300 mb-1.5">Nama Lengkap <span class="text-red-400">*</span></label>
-        <div class="relative">
-          <i data-lucide="user" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"></i>
-          <input type="text" id="nama_lengkap" name="nama_lengkap" required autofocus
-            class="w-full pl-10 pr-4 py-2.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
-        </div>
-      </div>
-
-      <div>
-        <label for="kelas" class="block text-sm font-medium text-gray-300 mb-1.5">Kelas <span class="text-red-400">*</span></label>
-        <div class="relative">
-          <i data-lucide="school" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"></i>
-          <input type="text" id="kelas" name="kelas" placeholder="Contoh: XI MIPA 1" required
-            class="w-full pl-10 pr-4 py-2.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
-        </div>
-      </div>
-
-      <div>
-        <label for="username" class="block text-sm font-medium text-gray-300 mb-1.5">Username <span class="text-red-400">*</span></label>
-        <div class="relative">
-          <i data-lucide="at-sign" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"></i>
-          <input type="text" id="username" name="username" required
-            class="w-full pl-10 pr-4 py-2.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
-        </div>
-      </div>
-
-      <div>
-        <label for="password" class="block text-sm font-medium text-gray-300 mb-1.5">Password <span class="text-red-400">*</span></label>
-        <div class="relative">
-          <i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"></i>
-          <input type="password" id="password" name="password" minlength="6" required
-            class="w-full pl-10 pr-4 py-2.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
-        </div>
-        <p class="text-xs text-gray-500 mt-1">Minimal 6 karakter</p>
-      </div>
-
-      <div>
-        <label for="konfirmasi_password" class="block text-sm font-medium text-gray-300 mb-1.5">Konfirmasi Password <span class="text-red-400">*</span></label>
-        <div class="relative">
-          <i data-lucide="shield-check" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"></i>
-          <input type="password" id="konfirmasi_password" name="konfirmasi_password" minlength="6" required
-            class="w-full pl-10 pr-4 py-2.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
-        </div>
-      </div>
-
-
-      <!-- Kartu Pelajar Upload -->
-      <div>
-        <label class="block text-sm font-medium text-gray-300 mb-1.5">
-          Kartu Pelajar <span class="text-red-400">*</span>
-          <span class="text-gray-500 font-normal">(JPG/PNG, maks. 2 MB)</span>
-        </label>
-        <div id="dropzone"
-          class="relative border-2 border-dashed border-white/20 rounded-xl p-5 text-center cursor-pointer hover:border-indigo-400 hover:bg-white/5 transition-all">
-          <input type="file" id="kartu_pelajar" name="kartu_pelajar" accept="image/jpeg,image/png" required
-            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-          <i data-lucide="id-card" class="w-8 h-8 text-gray-500 mx-auto mb-2"></i>
-          <p id="dropzoneLabel" class="text-sm text-gray-400">Klik atau seret foto kartu pelajar ke sini</p>
-          <p class="text-xs text-gray-600 mt-1">Format: JPG, PNG</p>
-        </div>
-        <img id="previewImg" class="hidden mt-3 w-full max-h-40 object-contain rounded-xl border border-white/10" alt="Preview kartu pelajar">
-      </div>
-
-      <div>
-        <label for="alasan_masuk" class="block text-sm font-medium text-gray-300 mb-1.5">Alasan Bergabung <span class="text-gray-500 font-normal">(opsional)</span></label>
-        <textarea id="alasan_masuk" name="alasan_masuk" rows="2"
-          placeholder="Ceritakan alasan kamu ingin bergabung…"
-          class="w-full px-4 py-2.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all resize-none"></textarea>
-      </div>
-
-      <button type="submit"
-        class="w-full mt-2 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-sm
-               transition-all duration-200 shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:-translate-y-0.5 active:translate-y-0">
-        Daftar Sekarang
-      </button>
-    </form>
-
-    <p class="text-center text-sm text-gray-400 mt-6">
-      Sudah punya akun?
-      <a href="login.html" class="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">Login di sini</a>
-    </p>
-
-    <div class="mt-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex gap-2">
-      <i data-lucide="info" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></i>
-      <p class="text-xs text-amber-300">Akun akan menunggu persetujuan Admin sebelum bisa digunakan. Pastikan foto kartu pelajar jelas dan terbaca.</p>
-    </div>
-  </div>
-</div>
-
-<script>
-  lucide.createIcons();
-
-  // Error alerts from redirect
-  const params = new URLSearchParams(window.location.search);
-  const alertBox = document.getElementById('alertBox');
-  const alerts = {
-    empty:              ['bg-amber-500/20 border-amber-500/40 text-amber-300', 'Semua field wajib diisi.'],
-    password_mismatch:  ['bg-red-500/20 border-red-500/40 text-red-300', 'Password dan konfirmasi tidak sama.'],
-    username_exists:    ['bg-red-500/20 border-red-500/40 text-red-300', 'Username sudah digunakan.'],
-    password_short:     ['bg-amber-500/20 border-amber-500/40 text-amber-300', 'Password minimal 6 karakter.'],
-    no_id_card:         ['bg-red-500/20 border-red-500/40 text-red-300', 'Foto kartu pelajar wajib diunggah.'],
-    upload_error:       ['bg-red-500/20 border-red-500/40 text-red-300', 'Gagal mengunggah kartu pelajar.'],
-  };
-  const err = params.get('error');
-  if (alerts[err]) {
-    const [cls, msg] = alerts[err];
-    alertBox.innerHTML = `<div class="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium border ${cls}">${msg}</div>`;
-  }
-
-  // Password match validation
-  document.getElementById('registerForm').addEventListener('submit', function(e) {
-    const pass    = document.getElementById('password').value;
-    const confirm = document.getElementById('konfirmasi_password').value;
-    if (pass !== confirm) {
-      e.preventDefault();
-      alertBox.innerHTML = `<div class="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium border bg-red-500/20 border-red-500/40 text-red-300">Password dan konfirmasi tidak sama.</div>`;
-      window.scrollTo(0, 0);
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            accent: '#6366F1', 'accent-light': '#EEF2FF', 'accent-mid': '#C7D2FE',
+            green: '#22C55E', ink: '#0F172A', 'ink-2': '#334155',
+            muted: '#64748B', border: '#E2E8F0', surface: '#F8FAFC',
+          }
+        }
+      }
     }
-  });
+  </script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
-  // File preview
-  document.getElementById('kartu_pelajar').addEventListener('change', function() {
-    const file = this.files[0];
-    if (!file) return;
-    document.getElementById('dropzoneLabel').textContent = file.name;
-    const reader = new FileReader();
-    reader.onload = e => {
-      const img = document.getElementById('previewImg');
-      img.src = e.target.result;
-      img.classList.remove('hidden');
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #F8FAFC; color: #0F172A; -webkit-font-smoothing: antialiased; }
+
+    /* ── GRADIENT TEXT ── */
+    .text-gradient {
+      background: linear-gradient(135deg, #6366F1 0%, #0891B2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── CARD ── */
+    .form-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 20px;
+      box-shadow: 0 4px 24px rgba(15,23,42,0.07);
+    }
+
+    /* ── INPUT ── */
+    .field-input {
+      width: 100%;
+      padding: 11px 12px 11px 42px;
+      background: #F8FAFC;
+      border: 1.5px solid #E2E8F0;
+      border-radius: 10px;
+      color: #0F172A;
+      font-size: 0.875rem;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+    .field-input:focus { border-color: #6366F1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); background: #fff; }
+    .field-input.error { border-color: #EF4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.08); }
+    .field-input.success { border-color: #22C55E; box-shadow: 0 0 0 3px rgba(34,197,94,0.08); }
+    .field-input::placeholder { color: #94A3B8; }
+    .field-input-bare { padding-left: 12px; }
+
+    /* ── FIELD ICON ── */
+    .field-icon {
+      position: absolute;
+      left: 13px; top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: #94A3B8;
+      transition: color 0.2s;
+    }
+    .field-wrapper:focus-within .field-icon { color: #6366F1; }
+
+    /* ── LABEL ── */
+    .field-label {
+      display: block;
+      font-size: 0.8rem; font-weight: 600;
+      color: #475569; margin-bottom: 5px;
+    }
+
+    /* ── BUTTON ── */
+    .btn-submit {
+      width: 100%;
+      padding: 12px 24px;
+      background: #22C55E;
+      color: #fff;
+      font-weight: 700; font-size: 0.9rem;
+      font-family: 'Inter', sans-serif;
+      border-radius: 10px; border: none;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      box-shadow: 0 2px 8px rgba(34,197,94,0.3);
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-submit:hover { background: #16A34A; box-shadow: 0 4px 16px rgba(34,197,94,0.4); transform: translateY(-1px); }
+    .btn-submit:active { transform: translateY(0); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* ── STEP INDICATOR ── */
+    .step-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #E2E8F0;
+      transition: all 0.3s ease;
+    }
+    .step-dot.active { background: #6366F1; box-shadow: 0 0 0 3px rgba(99,102,241,0.2); }
+    .step-dot.done   { background: #22C55E; }
+    .step-line {
+      flex: 1; height: 2px; background: #E2E8F0;
+      transition: background 0.4s ease;
+    }
+    .step-line.done { background: #22C55E; }
+
+    /* ── STRENGTH BARS ── */
+    .strength-bar {
+      height: 3px; border-radius: 2px; flex: 1;
+      background: #E2E8F0;
+      transition: background 0.3s ease;
+    }
+    .strength-bar.weak   { background: #EF4444; }
+    .strength-bar.medium { background: #F59E0B; }
+    .strength-bar.strong { background: #22C55E; }
+
+    /* ── DROPZONE ── */
+    #dropzone {
+      border: 2px dashed #CBD5E1;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      position: relative;
+      background: #F8FAFC;
+    }
+    #dropzone:hover, #dropzone.drag-over { border-color: #6366F1; background: #EEF2FF; }
+    #dropzone.has-file { border-color: #22C55E; background: #F0FDF4; }
+
+    /* ── SHAKE ── */
+    @keyframes shake { 0%,100%{transform:translateX(0)} 10%,30%,50%,70%,90%{transform:translateX(-4px)} 20%,40%,60%,80%{transform:translateX(4px)} }
+    .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97); }
+
+    /* ── SELECT ── */
+    select.field-input {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394A3B8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 16px;
+      padding-right: 36px;
+    }
+    select.field-input option { background: #fff; color: #0F172A; }
+
+    /* ── DIVIDER ── */
+    .divider-x { height: 1px; background: #E2E8F0; }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #F1F5F9; }
+    ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+
+    /* ── REDUCED MOTION ── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen py-8 px-4 sm:px-6">
+
+  <div class="max-w-lg mx-auto" id="form-root" style="opacity:0">
+
+    <!-- Back + Brand -->
+    <div class="flex items-center justify-between mb-6">
+      <a href="index.html" class="inline-flex items-center gap-1.5 text-muted hover:text-ink text-sm font-medium transition-colors cursor-pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Beranda
+      </a>
+      <a href="index.html" class="flex items-center gap-2 cursor-pointer">
+        <img src="assets/media/logo.png" alt="KMS Computer Club"
+          class="w-7 h-7 object-contain rounded-md border border-border"
+          onerror="this.style.display='none'">
+        <span class="font-bold text-sm text-ink">KMS Computer Club</span>
+      </a>
+    </div>
+
+    <!-- Card -->
+    <div class="form-card overflow-hidden">
+
+      <!-- Card Header -->
+      <div class="px-7 pt-7 pb-5 border-b border-border">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h1 class="text-xl font-black text-ink mb-1">Daftar Anggota</h1>
+            <p class="text-muted text-sm">Bergabunglah dengan komunitas tech & e-sport kami!</p>
+          </div>
+          <!-- Step Dots -->
+          <div class="flex items-center gap-1.5 pt-1 flex-shrink-0">
+            <div class="step-dot active" id="step1-dot"></div>
+            <div class="step-line" id="step1-line"></div>
+            <div class="step-dot" id="step2-dot"></div>
+            <div class="step-line" id="step2-line"></div>
+            <div class="step-dot" id="step3-dot"></div>
+          </div>
+        </div>
+        <!-- Step Labels -->
+        <div class="flex justify-between text-[10px] mt-2 font-semibold">
+          <span id="step1-label" class="text-accent">Identitas</span>
+          <span id="step2-label" class="text-muted">Akun</span>
+          <span id="step3-label" class="text-muted">Dokumen</span>
+        </div>
+      </div>
+
+      <!-- Alert Box -->
+      <div id="alertBox" class="px-7 pt-4"></div>
+
+      <!-- Form -->
+      <form action="proses_register.php" method="POST" id="registerForm" enctype="multipart/form-data"
+            class="px-7 pb-7 pt-5 space-y-4" novalidate>
+
+        <!-- ── GROUP 1: Identitas ── -->
+        <div>
+          <div class="mb-4">
+            <label for="nama_lengkap" class="field-label">Nama Lengkap <span class="text-red-500">*</span></label>
+            <div class="field-wrapper relative">
+              <span class="field-icon">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </span>
+              <input type="text" id="nama_lengkap" name="nama_lengkap" required autofocus
+                class="field-input" placeholder="Nama lengkap sesuai rapor">
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label for="kelas" class="field-label">Kelas <span class="text-red-500">*</span></label>
+            <div class="field-wrapper relative">
+              <span class="field-icon">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                </svg>
+              </span>
+              <input type="text" id="kelas" name="kelas" required
+                class="field-input" placeholder="Contoh: XI MIPA 1">
+            </div>
+          </div>
+
+          <div>
+            <label for="divisi" class="field-label">Divisi yang Diminati <span class="text-red-500">*</span></label>
+            <div class="field-wrapper relative">
+              <span class="field-icon">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                  <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                </svg>
+              </span>
+              <select id="divisi" name="divisi" class="field-input">
+                <option value="" disabled selected>Pilih divisi...</option>
+                <option value="komputer">Divisi Komputer (Coding & Hardware)</option>
+                <option value="esport">Divisi E-Sport (Mobile Legends)</option>
+                <option value="keduanya">Keduanya</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider-x"></div>
+
+        <!-- ── GROUP 2: Akun ── -->
+        <div>
+          <div class="mb-4">
+            <label for="username" class="field-label">Username <span class="text-red-500">*</span></label>
+            <div class="field-wrapper relative">
+              <span class="field-icon">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="4"/>
+                  <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"/>
+                </svg>
+              </span>
+              <input type="text" id="username" name="username" required
+                class="field-input" placeholder="Buat username unik">
+            </div>
+          </div>
+
+          <div class="mb-1">
+            <label for="password" class="field-label">Password <span class="text-red-500">*</span></label>
+            <div class="field-wrapper relative">
+              <span class="field-icon">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              </span>
+              <input type="password" id="password" name="password" minlength="6" required
+                class="field-input pr-12" placeholder="Min. 6 karakter">
+              <button type="button" id="togglePwd"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-ink transition-colors cursor-pointer p-1">
+                <svg id="eyeShow" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg id="eyeHide" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Strength -->
+          <div class="mb-4">
+            <div class="flex gap-1 mb-1" id="strengthBars">
+              <div class="strength-bar" id="sb1"></div>
+              <div class="strength-bar" id="sb2"></div>
+              <div class="strength-bar" id="sb3"></div>
+              <div class="strength-bar" id="sb4"></div>
+            </div>
+            <p class="text-xs text-muted" id="strengthLabel">Masukkan password</p>
+          </div>
+
+          <div>
+            <label for="konfirmasi_password" class="field-label">Konfirmasi Password <span class="text-red-500">*</span></label>
+            <div class="field-wrapper relative">
+              <span class="field-icon">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0 1 12 2.944a11.955 11.955 0 0 1-8.618 3.04A12.02 12.02 0 0 0 3 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+              </span>
+              <input type="password" id="konfirmasi_password" name="konfirmasi_password" minlength="6" required
+                class="field-input" placeholder="Ulangi password">
+            </div>
+            <p id="pwMatch" class="text-xs mt-1 hidden"></p>
+          </div>
+        </div>
+
+        <div class="divider-x"></div>
+
+        <!-- ── GROUP 3: Dokumen ── -->
+        <div>
+          <div class="mb-4">
+            <label class="field-label">
+              Kartu Pelajar <span class="text-red-500">*</span>
+              <span class="text-muted font-normal ml-1">(JPG/PNG, maks. 2 MB)</span>
+            </label>
+            <div id="dropzone">
+              <input type="file" id="kartu_pelajar" name="kartu_pelajar" accept="image/jpeg,image/png" required
+                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+              <div id="dropzoneContent">
+                <div class="w-10 h-10 rounded-xl bg-accent-light border border-accent-mid flex items-center justify-center mx-auto mb-2">
+                  <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                </div>
+                <p class="text-sm text-ink-2 font-medium" id="dropzoneLabel">Klik atau seret foto kartu pelajar</p>
+                <p class="text-xs text-muted mt-0.5">Format: JPG, PNG · Maks 2 MB</p>
+              </div>
+            </div>
+            <img id="previewImg" class="hidden mt-3 w-full max-h-40 object-contain rounded-xl border border-border" alt="Preview kartu pelajar">
+          </div>
+
+          <div>
+            <label for="alasan_masuk" class="field-label">
+              Alasan Bergabung <span class="text-muted font-normal">(opsional)</span>
+            </label>
+            <textarea id="alasan_masuk" name="alasan_masuk" rows="3"
+              placeholder="Ceritakan motivasi kamu bergabung ke Computer Club…"
+              class="field-input field-input-bare resize-none" style="height:auto; padding-top:10px; padding-bottom:10px;"></textarea>
+          </div>
+        </div>
+
+        <!-- Info -->
+        <div class="flex gap-3 p-3.5 rounded-xl bg-amber-50 border border-amber-200">
+          <svg class="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <p class="text-xs text-amber-700 leading-relaxed">
+            Akun akan menunggu persetujuan Admin sebelum bisa digunakan. Pastikan foto kartu pelajar jelas dan terbaca.
+          </p>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn-submit" id="submitBtn">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+          Daftar Sekarang
+        </button>
+
+        <p class="text-center text-sm text-muted">
+          Sudah punya akun?
+          <a href="login.html" class="text-accent hover:text-indigo-700 font-semibold transition-colors cursor-pointer ml-1">Login di sini</a>
+        </p>
+      </form>
+    </div>
+
+    <p class="text-center text-xs text-muted mt-5">
+      &copy; 2026 KMS Computer Club · SMAN 1 Rancaekek
+    </p>
+  </div>
+
+  <!-- Motion.dev Entrance -->
+  <script type="module">
+    import { animate, stagger } from "https://cdn.jsdelivr.net/npm/motion@latest/+esm";
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduced) {
+      animate('#form-root', { opacity:[0,1], y:[20,0] }, { duration:0.6, easing:[0.16,1,0.3,1], delay:0.1 });
+    } else {
+      const el = document.getElementById('form-root');
+      if (el) el.style.opacity = '1';
+    }
+  </script>
+
+  <script>
+    lucide.createIcons();
+
+    // ── ALERTS ──
+    const params   = new URLSearchParams(window.location.search);
+    const alertBox = document.getElementById('alertBox');
+    const alertMap = {
+      empty:             ['bg-amber-50 border-amber-200 text-amber-700', 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z', 'Semua field wajib diisi.'],
+      password_mismatch: ['bg-red-50 border-red-200 text-red-700', 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z', 'Password dan konfirmasi tidak sama.'],
+      username_exists:   ['bg-red-50 border-red-200 text-red-700', 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z', 'Username sudah digunakan, coba yang lain.'],
+      password_short:    ['bg-amber-50 border-amber-200 text-amber-700', 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z', 'Password minimal 6 karakter.'],
+      no_id_card:        ['bg-red-50 border-red-200 text-red-700', 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z', 'Foto kartu pelajar wajib diunggah.'],
+      upload_error:      ['bg-red-50 border-red-200 text-red-700', 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z', 'Gagal mengunggah kartu pelajar.'],
     };
-    reader.readAsDataURL(file);
-  });
-</script>
+    const err = params.get('error');
+    if (alertMap[err]) {
+      const [cls, iconPath, msg] = alertMap[err];
+      alertBox.innerHTML = `
+        <div class="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-medium border mb-1 ${cls}">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${iconPath}"/>
+          </svg>
+          <span>${msg}</span>
+        </div>`;
+    }
+
+    // ── STEP INDICATOR ──
+    function updateSteps(active) {
+      ['step1-dot','step2-dot','step3-dot'].forEach((id, i) => {
+        const dot = document.getElementById(id);
+        const lbl = document.getElementById(id.replace('dot','label'));
+        dot.classList.remove('active','done');
+        lbl.style.color = '#64748B';
+        if (i < active) dot.classList.add('done');
+        else if (i === active) { dot.classList.add('active'); lbl.style.color = '#6366F1'; }
+      });
+      ['step1-line','step2-line'].forEach((id, i) => {
+        document.getElementById(id).classList.toggle('done', i < active);
+      });
+    }
+    document.querySelectorAll('#username, #password, #konfirmasi_password').forEach(el => {
+      el.addEventListener('focus', () => updateSteps(1));
+    });
+    document.querySelectorAll('#kartu_pelajar, #alasan_masuk, #dropzone').forEach(el => {
+      el.addEventListener('focus', () => updateSteps(2));
+    });
+
+    // ── TOGGLE PASSWORD ──
+    document.getElementById('togglePwd').addEventListener('click', function() {
+      const pwd = document.getElementById('password');
+      const show = document.getElementById('eyeShow'), hide = document.getElementById('eyeHide');
+      if (pwd.type === 'password') { pwd.type = 'text'; show.classList.add('hidden'); hide.classList.remove('hidden'); }
+      else { pwd.type = 'password'; show.classList.remove('hidden'); hide.classList.add('hidden'); }
+    });
+
+    // ── PASSWORD STRENGTH ──
+    const bars = ['sb1','sb2','sb3','sb4'].map(id => document.getElementById(id));
+    const strengthLabel = document.getElementById('strengthLabel');
+    document.getElementById('password').addEventListener('input', function() {
+      const val = this.value;
+      let score = 0;
+      if (val.length >= 6) score++;
+      if (val.length >= 10) score++;
+      if (/[A-Z]/.test(val) && /[a-z]/.test(val)) score++;
+      if (/[0-9]/.test(val) || /[^A-Za-z0-9]/.test(val)) score++;
+      bars.forEach((bar, i) => {
+        bar.className = 'strength-bar';
+        if (i < score) bar.classList.add(score <= 1 ? 'weak' : score === 2 ? 'medium' : 'strong');
+      });
+      const labels = ['','Lemah','Kurang kuat','Cukup kuat!','Kuat!'];
+      const colors = ['#94A3B8','#EF4444','#F59E0B','#22C55E','#16A34A'];
+      strengthLabel.textContent = val.length === 0 ? 'Masukkan password' : (labels[Math.min(score,4)] || 'Kuat!');
+      strengthLabel.style.color = val.length === 0 ? '#94A3B8' : colors[Math.min(score,4)];
+    });
+
+    // ── PASSWORD MATCH ──
+    function checkMatch() {
+      const pwd = document.getElementById('password').value;
+      const conf = document.getElementById('konfirmasi_password').value;
+      const msg = document.getElementById('pwMatch');
+      const inp = document.getElementById('konfirmasi_password');
+      if (!conf) { msg.classList.add('hidden'); inp.classList.remove('error','success'); return; }
+      if (pwd === conf) {
+        msg.textContent = 'Password cocok ✓';
+        msg.className = 'text-xs mt-1 text-green-600';
+        inp.classList.add('success'); inp.classList.remove('error');
+      } else {
+        msg.textContent = 'Password tidak cocok';
+        msg.className = 'text-xs mt-1 text-red-600';
+        inp.classList.add('error'); inp.classList.remove('success');
+      }
+      msg.classList.remove('hidden');
+    }
+    document.getElementById('konfirmasi_password').addEventListener('input', checkMatch);
+    document.getElementById('password').addEventListener('input', checkMatch);
+
+    // ── DROPZONE ──
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('kartu_pelajar');
+    const dropzoneLabel = document.getElementById('dropzoneLabel');
+    const previewImg = document.getElementById('previewImg');
+
+    ['dragenter','dragover'].forEach(ev => {
+      dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+    });
+    ['dragleave','drop'].forEach(ev => {
+      dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.remove('drag-over'); });
+    });
+    dropzone.addEventListener('drop', e => {
+      const file = e.dataTransfer.files[0];
+      if (file) { fileInput.files = e.dataTransfer.files; processFile(file); }
+    });
+    fileInput.addEventListener('change', function() { if (this.files[0]) processFile(this.files[0]); });
+
+    function processFile(file) {
+      dropzone.classList.add('has-file');
+      dropzoneLabel.textContent = file.name;
+      const reader = new FileReader();
+      reader.onload = e => { previewImg.src = e.target.result; previewImg.classList.remove('hidden'); };
+      reader.readAsDataURL(file);
+    }
+
+    // ── FORM VALIDATION ──
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+      const pwd = document.getElementById('password').value;
+      const conf = document.getElementById('konfirmasi_password').value;
+      if (pwd !== conf) {
+        e.preventDefault();
+        const inp = document.getElementById('konfirmasi_password');
+        inp.classList.add('error', 'shake');
+        inp.addEventListener('animationend', () => inp.classList.remove('shake'), { once: true });
+        alertBox.innerHTML = `
+          <div class="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-medium border bg-red-50 border-red-200 text-red-700 mb-1">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>Password dan konfirmasi tidak sama.</span>
+          </div>`;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.innerHTML = `
+        <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-20"/>
+          <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" class="opacity-75"/>
+        </svg>
+        Mendaftar...`;
+    });
+  </script>
 </body>
 </html>

@@ -1,162 +1,454 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login — KMS Computer Club</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-<style>body { font-family: 'Inter', sans-serif; }</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Masuk — KMS Computer Club</title>
+  <meta name="description" content="Login ke portal anggota KMS Computer Club SMAN 1 Rancaekek.">
+  <meta name="theme-color" content="#ffffff">
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            accent: '#6366F1', 'accent-light': '#EEF2FF', 'accent-mid': '#C7D2FE',
+            green: '#22C55E', ink: '#0F172A', 'ink-2': '#334155',
+            muted: '#64748B', border: '#E2E8F0', surface: '#F8FAFC',
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #F8FAFC; color: #0F172A; -webkit-font-smoothing: antialiased; }
+
+    /* ── LEFT PANEL BG ── */
+    .left-panel {
+      background: linear-gradient(160deg, #EEF2FF 0%, #ECFEFF 60%, #DCFCE7 100%);
+    }
+
+    /* ── GRADIENT TEXT ── */
+    .text-gradient {
+      background: linear-gradient(135deg, #6366F1 0%, #0891B2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── GLASS / CARD ── */
+    .login-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 20px;
+      box-shadow: 0 4px 24px rgba(15,23,42,0.07);
+    }
+
+    /* ── INPUT ── */
+    .field-input {
+      width: 100%;
+      padding: 11px 12px 11px 42px;
+      background: #F8FAFC;
+      border: 1.5px solid #E2E8F0;
+      border-radius: 10px;
+      color: #0F172A;
+      font-size: 0.875rem;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+    .field-input:focus {
+      border-color: #6366F1;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+      background: #FFFFFF;
+    }
+    .field-input::placeholder { color: #94A3B8; }
+
+    /* ── FIELD ICON ── */
+    .field-icon {
+      position: absolute;
+      left: 13px; top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: #94A3B8;
+      transition: color 0.2s;
+    }
+    .field-wrapper:focus-within .field-icon { color: #6366F1; }
+
+    /* ── LABEL ── */
+    .field-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 5px;
+    }
+
+    /* ── BUTTON ── */
+    .btn-submit {
+      width: 100%;
+      padding: 12px 24px;
+      background: #6366F1;
+      color: #fff;
+      font-weight: 700; font-size: 0.9rem;
+      font-family: 'Inter', sans-serif;
+      border-radius: 10px; border: none;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-submit:hover { background: #4F46E5; box-shadow: 0 4px 16px rgba(99,102,241,0.4); transform: translateY(-1px); }
+    .btn-submit:active { transform: translateY(0); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* ── FEATURE ITEM ── */
+    .feature-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.7);
+      border: 1px solid rgba(255,255,255,0.9);
+      border-radius: 12px;
+      backdrop-filter: blur(8px);
+      transition: all 0.25s ease;
+    }
+    .feature-item:hover { transform: translateX(4px); border-color: rgba(99,102,241,0.3); }
+
+    /* ── DIVIDER ── */
+    .divider-x { height: 1px; background: #E2E8F0; }
+
+    /* ── TOAST ── */
+    @keyframes toast-in  { from { opacity:0; transform:translateX(110%); } to { opacity:1; transform:translateX(0); } }
+    @keyframes toast-out { from { opacity:1; transform:translateX(0); }   to { opacity:0; transform:translateX(110%); } }
+    .toast-enter { animation: toast-in  .35s cubic-bezier(.22,1,.36,1) forwards; }
+    .toast-leave { animation: toast-out .3s  cubic-bezier(.55,0,1,.45) forwards; }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #F1F5F9; }
+    ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+
+    /* ── REDUCED MOTION ── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-gray-950 via-indigo-950 to-gray-900 flex items-center justify-center p-4">
+<body class="min-h-screen flex">
 
-<div class="w-full max-w-md">
-  <!-- Logo / Brand -->
-  <div class="text-center mb-8">
-    <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl overflow-hidden shadow-2xl shadow-indigo-500/40 mb-4">
-      <img src="assets/media/logo.png" alt="KMS Computer Club" class="w-full h-full object-cover">
+  <!-- ── LEFT PANEL ── -->
+  <div class="hidden lg:flex lg:w-[46%] xl:w-[48%] left-panel flex-col justify-between p-12 relative overflow-hidden">
+    <!-- Decorative circles -->
+    <div class="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-accent/10 blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-10 -left-10 w-48 h-48 rounded-full bg-green/10 blur-2xl pointer-events-none"></div>
+
+    <!-- Brand -->
+    <div id="panel-brand" style="opacity:0">
+      <a href="index.html" class="inline-flex items-center gap-3 cursor-pointer">
+        <img src="assets/media/logo.png" alt="KMS Computer Club"
+          class="w-10 h-10 object-contain rounded-xl shadow-sm border border-white/60"
+          onerror="this.style.display='none'">
+        <div>
+          <div class="font-bold text-ink text-base leading-tight">KMS Computer Club</div>
+          <div class="text-muted text-xs mt-0.5">SMAN 1 Rancaekek</div>
+        </div>
+      </a>
     </div>
-    <h1 class="text-2xl font-bold text-white tracking-tight">KMS Computer Club</h1>
-    <p class="text-sm text-gray-400 mt-1">SMAN 1 Rancaekek</p>
-  </div>
 
-  <!-- Card -->
-  <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-8">
-    <h2 class="text-lg font-semibold text-white mb-1">Selamat datang kembali</h2>
-    <p class="text-sm text-gray-400 mb-6">Masuk ke akun Anda untuk melanjutkan</p>
-
-    <!-- Alert Box -->
-    <div id="alertBox" class="mb-4"></div>
-
-    <form action="proses_login.php" method="POST" class="space-y-4">
-      <div>
-        <label for="username" class="block text-sm font-medium text-gray-300 mb-1.5">Username</label>
-        <div class="relative">
-          <i data-lucide="user" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"></i>
-          <input type="text" id="username" name="username" required autofocus
-            class="w-full pl-10 pr-4 py-2.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-500 text-sm
-                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
-        </div>
+    <!-- Content -->
+    <div id="panel-content" style="opacity:0" class="max-w-sm">
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-6"
+           style="background:rgba(34,197,94,0.12); color:#15803D; border: 1px solid rgba(34,197,94,0.25);">
+        <span class="w-1.5 h-1.5 rounded-full bg-green block animate-pulse"></span>
+        Portal Anggota Aktif
       </div>
 
-      <div>
-        <label for="password" class="block text-sm font-medium text-gray-300 mb-1.5">Password</label>
-        <div class="relative">
-          <i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"></i>
-          <input type="password" id="password" name="password" required
-            class="w-full pl-10 pr-4 py-2.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-500 text-sm
-                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+      <h1 class="text-3xl sm:text-4xl font-black text-ink mb-3 leading-tight tracking-tight">
+        Selamat Datang<br><span class="text-gradient">Kembali!</span>
+      </h1>
+      <p class="text-muted text-sm leading-relaxed mb-8">
+        Masuk ke akun anggotamu untuk mengakses materi, jadwal kegiatan, dan informasi eksklusif Computer Club.
+      </p>
+
+      <div class="space-y-3">
+        <div class="feature-item">
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:rgba(99,102,241,0.12);">
+            <svg class="w-4 h-4" style="color:#6366F1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+            </svg>
+          </div>
+          <div>
+            <div class="text-ink text-sm font-semibold">Materi & Learning Path</div>
+            <div class="text-muted text-xs">Akses kurikulum divisi komputer</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:rgba(34,197,94,0.12);">
+            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </div>
+          <div>
+            <div class="text-ink text-sm font-semibold">Jadwal Kegiatan</div>
+            <div class="text-muted text-xs">Cek jadwal latihan & event</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:rgba(8,145,178,0.1);">
+            <svg class="w-4 h-4" style="color:#0891B2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <div>
+            <div class="text-ink text-sm font-semibold">Profil & Statistik</div>
+            <div class="text-muted text-xs">Pantau progress belajarmu</div>
+          </div>
         </div>
       </div>
+    </div>
 
-      <button type="submit"
-        class="w-full mt-2 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-sm
-               transition-all duration-200 shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:-translate-y-0.5 active:translate-y-0">
-        Masuk ke Akun
-      </button>
-    </form>
-
-    <p class="text-center text-sm text-gray-400 mt-6">
-      Belum punya akun?
-      <a href="register.html" class="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">Daftar di sini</a>
-    </p>
+    <!-- Footer -->
+    <div id="panel-footer" style="opacity:0" class="text-muted text-xs">
+      &copy; 2026 KMS Computer Club · SMAN 1 Rancaekek
+    </div>
   </div>
-</div>
 
-<style>
-  @keyframes toast-in  { from { opacity:0; transform:translateX(110%); } to { opacity:1; transform:translateX(0); } }
-  @keyframes toast-out { from { opacity:1; transform:translateX(0); } to { opacity:0; transform:translateX(110%); } }
-  .toast-enter { animation: toast-in  .35s cubic-bezier(.22,1,.36,1) forwards; }
-  .toast-leave { animation: toast-out .3s  cubic-bezier(.55,0,1,.45) forwards; }
-</style>
+  <!-- ── RIGHT PANEL (Form) ── -->
+  <div class="w-full lg:w-[54%] xl:w-[52%] flex items-center justify-center px-5 py-10 sm:px-10 min-h-screen bg-surface">
+    <div class="w-full max-w-sm" id="form-panel" style="opacity:0">
 
-<!-- Toast Container -->
-<div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none"></div>
+      <!-- Mobile Brand -->
+      <div class="lg:hidden text-center mb-8">
+        <a href="index.html" class="inline-flex flex-col items-center gap-2 cursor-pointer">
+          <img src="assets/media/logo.png" alt="KMS Computer Club"
+            class="w-14 h-14 object-contain rounded-2xl shadow-sm border border-border"
+            onerror="this.style.display='none'">
+          <div class="font-bold text-ink text-base">KMS Computer Club</div>
+          <div class="text-muted text-xs">SMAN 1 Rancaekek</div>
+        </a>
+      </div>
 
-<script>
-  lucide.createIcons();
-  const params = new URLSearchParams(window.location.search);
-  const alertBox = document.getElementById('alertBox');
+      <!-- Card -->
+      <div class="login-card p-8">
 
-  /* ── Inline alerts (form errors) ── */
-  const alerts = {
-    invalid: ['bg-red-500/20 border-red-500/40 text-red-300', 'alert-circle', 'Username atau password salah.'],
-    empty:   ['bg-amber-500/20 border-amber-500/40 text-amber-300', 'alert-triangle', 'Semua field wajib diisi.'],
-  };
-  if (params.get('registered') === '1')
-    alertBox.innerHTML = `<div class="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 mb-4"><svg xmlns='http://www.w3.org/2000/svg' class='w-4 h-4 shrink-0' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 13l4 4L19 7'/></svg>Registrasi berhasil! Silakan login.</div>`;
-  else if (params.get('logout') === '1')
-    alertBox.innerHTML = `<div class="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium bg-blue-500/20 border border-blue-500/40 text-blue-300 mb-4"><svg xmlns='http://www.w3.org/2000/svg' class='w-4 h-4 shrink-0' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M13 16h-1v-4h-1m1-4h.01M12 18h.01'/></svg>Anda telah logout.</div>`;
-  else {
+        <!-- Header -->
+        <div class="mb-6">
+          <h2 class="text-xl font-black text-ink mb-1">Masuk ke Akun</h2>
+          <p class="text-muted text-sm">Masukkan kredensialmu untuk melanjutkan.</p>
+        </div>
+
+        <!-- Alert Box -->
+        <div id="alertBox" class="mb-4"></div>
+
+        <!-- Form -->
+        <form action="proses_login.php" method="POST" class="space-y-4" id="loginForm">
+
+          <!-- Username -->
+          <div>
+            <label for="username" class="field-label">Username</label>
+            <div class="field-wrapper relative">
+              <span class="field-icon">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </span>
+              <input type="text" id="username" name="username" required autofocus
+                class="field-input" placeholder="Masukkan username kamu">
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div>
+            <label for="password" class="field-label">Password</label>
+            <div class="field-wrapper relative">
+              <span class="field-icon">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              </span>
+              <input type="password" id="password" name="password" required
+                class="field-input pr-12" placeholder="Masukkan password kamu">
+              <button type="button" id="togglePassword"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-ink transition-colors cursor-pointer p-1">
+                <svg id="eyeShow" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg id="eyeHide" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <button type="submit" class="btn-submit mt-1" id="submitBtn">
+            Masuk ke Akun
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </form>
+
+        <!-- Divider -->
+        <div class="my-5 divider-x"></div>
+
+        <!-- Links -->
+        <p class="text-center text-sm text-muted">
+          Belum punya akun?
+          <a href="register.html" class="text-accent hover:text-indigo-700 font-semibold transition-colors cursor-pointer ml-1">Daftar di sini</a>
+        </p>
+        <p class="text-center mt-2">
+          <a href="index.html" class="text-xs text-muted hover:text-ink transition-colors cursor-pointer inline-flex items-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Kembali ke beranda
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none"></div>
+
+  <!-- Motion.dev Entrance -->
+  <script type="module">
+    import { animate, stagger } from "https://cdn.jsdelivr.net/npm/motion@latest/+esm";
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduced) {
+      animate('#panel-brand',   { opacity:[0,1], x:[-16,0] }, { duration:0.55, delay:0.1, easing:[0.16,1,0.3,1] });
+      animate('#panel-content', { opacity:[0,1], y:[18,0]  }, { duration:0.65, delay:0.2, easing:[0.16,1,0.3,1] });
+      animate('#panel-footer',  { opacity:[0,0.7]           }, { duration:0.5,  delay:0.5 });
+      animate('.feature-item',  { opacity:[0,1], x:[-12,0] }, { duration:0.45, delay: stagger(0.09, { start:0.35 }), easing:[0.16,1,0.3,1] });
+      animate('#form-panel',    { opacity:[0,1], y:[20,0]  }, { duration:0.6,  delay:0.25, easing:[0.16,1,0.3,1] });
+    } else {
+      ['#panel-brand','#panel-content','#panel-footer','#form-panel'].forEach(s => {
+        const el = document.querySelector(s); if (el) el.style.opacity = '1';
+      });
+      document.querySelectorAll('.feature-item').forEach(el => el.style.opacity = '1');
+    }
+  </script>
+
+  <script>
+    lucide.createIcons();
+
+    // ── ALERTS ──
+    const params   = new URLSearchParams(window.location.search);
+    const alertBox = document.getElementById('alertBox');
+
+    function showAlert(cls, icon, msg) {
+      alertBox.innerHTML = `
+        <div class="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-medium border ${cls}">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${icon}"/>
+          </svg>
+          <span>${msg}</span>
+        </div>`;
+    }
+
+    const alertMap = {
+      invalid: ['bg-red-50 border-red-200 text-red-700',    'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z', 'Username atau password salah.'],
+      empty:   ['bg-amber-50 border-amber-200 text-amber-700', 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z', 'Semua field wajib diisi.'],
+    };
+
+    if (params.get('registered') === '1')
+      showAlert('bg-green-50 border-green-200 text-green-700', 'M5 13l4 4L19 7', 'Registrasi berhasil! Silakan login.');
+    else if (params.get('logout') === '1')
+      showAlert('bg-blue-50 border-blue-200 text-blue-700', 'M13 16h-1v-4h-1m1-4h.01M12 18h.01', 'Anda telah logout.');
+    else {
+      const err = params.get('error');
+      if (alertMap[err]) showAlert(...alertMap[err]);
+    }
+
+    // ── TOGGLE PASSWORD ──
+    document.getElementById('togglePassword').addEventListener('click', function() {
+      const pwd = document.getElementById('password');
+      const show = document.getElementById('eyeShow'), hide = document.getElementById('eyeHide');
+      if (pwd.type === 'password') { pwd.type = 'text';     show.classList.add('hidden');    hide.classList.remove('hidden'); }
+      else                         { pwd.type = 'password'; show.classList.remove('hidden'); hide.classList.add('hidden'); }
+    });
+
+    // ── LOADING STATE ──
+    document.getElementById('loginForm').addEventListener('submit', function() {
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.innerHTML = `
+        <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" stroke-width="4" class="opacity-25"/>
+          <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" class="opacity-75"/>
+        </svg>
+        Memverifikasi...`;
+    });
+
+    // ── TOAST ──
+    function showToast({ icon, title, message, colorClass, barClass, duration = 7000 }) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast-enter pointer-events-auto w-full bg-white border ${colorClass} rounded-2xl shadow-xl overflow-hidden`;
+      toast.innerHTML = `
+        <div class="flex items-start gap-3 p-4">
+          <div class="shrink-0 mt-0.5">${icon}</div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-ink">${title}</p>
+            <p class="text-xs text-muted mt-0.5 leading-relaxed">${message}</p>
+          </div>
+          <button onclick="dismissToast(this.closest('div'))"
+            class="shrink-0 text-muted hover:text-ink transition-colors ml-1 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="h-0.5 ${barClass} w-full origin-left" style="animation:shrink ${duration}ms linear forwards"></div>`;
+      container.appendChild(toast);
+      if (!document.getElementById('shrinkStyle')) {
+        const s = document.createElement('style');
+        s.id = 'shrinkStyle';
+        s.textContent = '@keyframes shrink{from{transform:scaleX(1)}to{transform:scaleX(0)}}';
+        document.head.appendChild(s);
+      }
+      const timer = setTimeout(() => dismissToast(toast), duration);
+      toast._timer = timer;
+    }
+    function dismissToast(el) {
+      if (!el || el._dismissed) return;
+      el._dismissed = true; clearTimeout(el._timer);
+      el.classList.remove('toast-enter'); el.classList.add('toast-leave');
+      el.addEventListener('animationend', () => el.remove(), { once: true });
+    }
+
     const err = params.get('error');
-    if (alerts[err]) {
-      const [cls, icon, msg] = alerts[err];
-      alertBox.innerHTML = `<div class="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium border ${cls} mb-4">${msg}</div>`;
+    if (err === 'pending') {
+      showToast({ icon:`<svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+        title:'Akun Menunggu Persetujuan', message:'Pendaftaran kamu sedang ditinjau admin. Harap bersabar!',
+        colorClass:'border-amber-200', barClass:'bg-amber-400' });
+    } else if (err === 'rejected') {
+      showToast({ icon:`<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+        title:'Pendaftaran Ditolak', message:'Maaf, pendaftaran akun kamu ditolak. Hubungi pengurus untuk info.',
+        colorClass:'border-red-200', barClass:'bg-red-400' });
     }
-  }
-
-  /* ── Toast helper ── */
-  function showToast({ icon, title, message, colorClass, barClass, duration = 7000 }) {
-    const container = document.getElementById('toastContainer');
-    const toast = document.createElement('div');
-    toast.className = `toast-enter pointer-events-auto w-full bg-gray-900/95 backdrop-blur border ${colorClass} rounded-2xl shadow-2xl overflow-hidden`;
-    toast.innerHTML = `
-      <div class="flex items-start gap-3 p-4">
-        <div class="shrink-0 mt-0.5">${icon}</div>
-        <div class="flex-1 min-w-0">
-          <p class="text-sm font-semibold text-white">${title}</p>
-          <p class="text-xs text-gray-300 mt-0.5 leading-relaxed">${message}</p>
-        </div>
-        <button onclick="dismissToast(this.closest('.toast-enter, div'))" class="shrink-0 text-gray-500 hover:text-gray-300 transition-colors ml-1">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-      <div class="h-1 ${barClass} w-full origin-left" style="animation:shrink ${duration}ms linear forwards"></div>`;
-    container.appendChild(toast);
-
-    // progress bar shrink keyframe
-    if (!document.getElementById('shrinkStyle')) {
-      const s = document.createElement('style');
-      s.id = 'shrinkStyle';
-      s.textContent = `@keyframes shrink { from{transform:scaleX(1)} to{transform:scaleX(0)} }`;
-      document.head.appendChild(s);
-    }
-
-    const timer = setTimeout(() => dismissToast(toast), duration);
-    toast._timer = timer;
-  }
-
-  function dismissToast(el) {
-    if (!el || el._dismissed) return;
-    el._dismissed = true;
-    clearTimeout(el._timer);
-    el.classList.remove('toast-enter');
-    el.classList.add('toast-leave');
-    el.addEventListener('animationend', () => el.remove(), { once: true });
-  }
-
-  /* ── Status-based toasts ── */
-  const err = params.get('error');
-
-  if (err === 'pending') {
-    showToast({
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
-      title: 'Akun Menunggu Persetujuan',
-      message: 'Pendaftaran kamu sedang ditinjau oleh admin. Harap bersabar, kami akan segera memprosesnya.',
-      colorClass: 'border-amber-500/40',
-      barClass: 'bg-amber-500',
-    });
-  } else if (err === 'rejected') {
-    showToast({
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
-      title: 'Pendaftaran Ditolak',
-      message: 'Maaf, pendaftaran akun kamu telah ditolak oleh admin. Hubungi pengurus untuk informasi lebih lanjut.',
-      colorClass: 'border-red-500/40',
-      barClass: 'bg-red-500',
-    });
-  }
-</script>
+  </script>
 </body>
 </html>
