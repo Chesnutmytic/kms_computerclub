@@ -2,7 +2,7 @@
 
 # 🖥️ KMS Computer Club
 
-**Knowledge Management System** untuk organisasi Computer Club — kelola materi, event, kepengurusan, dan catatan anggota dalam satu platform modern berbasis web.
+**Knowledge Management System** untuk organisasi Computer Club - kelola materi, event, kepengurusan, dan catatan anggota dalam satu platform modern berbasis web.
 
 [![PHP](https://img.shields.io/badge/PHP-8.2-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net/)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
