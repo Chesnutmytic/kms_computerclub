@@ -302,6 +302,6 @@ Pull request sangat diterima! Untuk perubahan besar, mohon buka **Issue** terleb
 
 <div align="center">
 
-Made with ❤️ by **KMS Computer Club Team**
+Made with ❤️
 
 </div>
